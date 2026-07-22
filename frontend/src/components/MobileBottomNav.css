@@ -1,0 +1,233 @@
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .mobile-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-evenly;
+
+    min-height: 68px;
+    padding: 7px 8px calc(15px + env(safe-area-inset-bottom));
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(42, 37, 32, 0.78) 0%,
+        rgba(28, 25, 22, 0.90) 48%,
+        rgba(22, 20, 18, 0.96) 100%
+      );
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 0;
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.35),
+      0 -12px 34px rgba(0, 0, 0, 0.42);
+
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    backdrop-filter: blur(22px) saturate(135%);
+    isolation: isolate;
+  }
+
+  .mobile-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.16),
+      transparent
+    );
+  }
+
+  .mobile-nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 52px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
+    padding: 2px 4px;
+    color: rgba(255, 255, 255, 0.50);
+    text-align: center;
+    text-decoration: none;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.1;
+    -webkit-tap-highlight-color: transparent;
+
+    transition:
+      color 0.16s ease,
+      opacity 0.16s ease,
+      transform 0.16s ease;
+  }
+
+  .mobile-nav a:hover {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .mobile-nav a:active {
+    transform: scale(0.94);
+  }
+
+  .mobile-nav a.active {
+    color: #ffffff;
+  }
+
+  .mobile-nav a.active svg {
+    color: #ffffff;
+    stroke: #ffffff;
+    filter: drop-shadow(0 2px 7px rgba(255, 255, 255, 0.13));
+    transform: translateY(-1px);
+  }
+
+  .mobile-nav svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    stroke-width: 2.15;
+    transition:
+      color 0.16s ease,
+      transform 0.16s ease,
+      filter 0.16s ease;
+  }
+
+  .mobile-nav span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-nav a:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.75);
+    outline-offset: -2px;
+    border-radius: 8px;
+  }
+
+  body.has-mobile-nav {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-nav {
+    min-height: 64px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
+  .mobile-nav a {
+    min-height: 49px;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-size: 9.5px;
+  }
+
+  .mobile-nav svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 991px) and (max-height: 520px) and (orientation: landscape) {
+  .mobile-nav {
+    min-height: 56px;
+    padding-top: 4px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav a {
+    min-height: 44px;
+    gap: 1px;
+    font-size: 9px;
+  }
+
+  .mobile-nav svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  body.has-mobile-nav {
+    padding-bottom: calc(66px + env(safe-area-inset-bottom));
+  }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  @media (max-width: 991px) {
+    .mobile-nav {
+      background: rgba(24, 22, 20, 0.98);
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .mobile-nav {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    border-radius: 0 !important;
+
+    /* Raises icons above the iPhone swipe bar */
+    padding:
+      9px 8px
+      calc(16px + env(safe-area-inset-bottom, 0px))
+      !important;
+
+    /* Blur continues fully to the bottom */
+    background: rgba(8, 8, 10, 0.76) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+    backdrop-filter: blur(22px) saturate(140%) !important;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.32);
+  }
+
+  body.has-mobile-nav {
+    padding-bottom:
+      calc(88px + env(safe-area-inset-bottom, 0px))
+      !important;
+  }
+}
+
+@media (max-width: 991px) {
+  .mobile-nav > a {
+    position: relative;
+    top: -14px;
+  }
+}
+@media (max-width: 991px) {
+  .mobile-nav svg {
+    width: 28px !important;
+    height: 28px !important;
+    stroke-width: 2.2;
+  }
+}
+@media (max-width: 991px) {
+  .mobile-nav {
+    padding-top: 18px !important;
+  }
+
+  .mobile-nav > a {
+    top: -14px;
+  }
+}

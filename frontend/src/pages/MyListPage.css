@@ -1,0 +1,545 @@
+.my-list-page {
+  min-height: 100vh;
+  background: #141414;
+  color: #fff;
+}
+
+.my-list-container {
+  width: min(1500px, calc(100% - 8vw));
+  margin: 0 auto;
+}
+
+/* Simple page heading: no badge, counters, or decorative dashboard blocks. */
+.my-list-header {
+  padding: calc(var(--nav-height, 60px) + 56px) 0 30px;
+}
+
+.my-list-header h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-main, 'Helvetica Neue', Arial, sans-serif);
+  font-size: clamp(1.85rem, 3vw, 2.65rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.my-list-header p {
+  margin: 9px 0 0;
+  color: #a3a3a3;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.my-list-content {
+  padding: 0 0 84px;
+}
+
+/* Filters behave like understated Netflix category tabs. */
+.my-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.my-list-filters {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+}
+
+.my-list-filters button {
+  position: relative;
+  padding: 8px 0 11px;
+  border: 0;
+  background: transparent;
+  color: #9b9b9b;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.my-list-filters button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -13px;
+  height: 2px;
+  background: transparent;
+}
+
+.my-list-filters button:hover {
+  color: #fff;
+}
+
+.my-list-filters button.active {
+  color: #fff;
+}
+
+.my-list-filters button.active::after {
+  background: #e50914;
+}
+
+.my-list-search {
+  position: relative;
+  width: min(280px, 100%);
+  flex: 0 0 auto;
+}
+
+.my-list-search i {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.my-list-search input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 36px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: inherit;
+  font-size: 0.86rem;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.my-list-search input:focus {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.my-list-search input::placeholder {
+  color: #777;
+}
+
+.my-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 28px 12px;
+}
+
+.my-list-card {
+  position: relative;
+  min-width: 0;
+}
+
+.my-list-poster-link,
+.my-list-card-info a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.my-list-poster-wrap {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #202020;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.my-list-poster-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    transform 0.24s ease,
+    filter 0.24s ease;
+}
+
+.my-list-card:hover .my-list-poster-wrap img {
+  transform: scale(1.035);
+  filter: brightness(0.78);
+}
+
+.my-list-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.08);
+  transition: opacity 0.2s ease;
+}
+
+.my-list-card:hover .my-list-card-overlay {
+  opacity: 1;
+}
+
+.my-list-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 1.35rem;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.45);
+}
+
+.my-list-play-btn i {
+  margin-left: 2px;
+}
+
+.my-list-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: rgba(18, 18, 18, 0.82);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.my-list-card:hover .my-list-remove-btn,
+.my-list-remove-btn:focus-visible {
+  opacity: 1;
+}
+
+.my-list-remove-btn:hover {
+  background: #e50914;
+  transform: scale(1.06);
+}
+
+.my-list-remove-btn:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.my-list-remove-btn .bi-arrow-repeat {
+  animation: myListSpin 0.75s linear infinite;
+}
+
+@keyframes myListSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.my-list-card-info {
+  padding: 9px 1px 0;
+}
+
+.my-list-card-info h2 {
+  margin: 0;
+  overflow: hidden;
+  color: #f2f2f2;
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-list-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 18px;
+  margin-top: 4px;
+  color: #808080;
+  font-size: 0.72rem;
+}
+
+.my-list-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #666;
+}
+
+/* Empty and error states remain deliberately plain. */
+.my-list-empty,
+.my-list-no-results {
+  width: min(440px, 100%);
+  margin: 62px auto 0;
+  padding: 30px 20px;
+  text-align: center;
+  color: #b3b3b3;
+}
+
+.my-list-empty > i {
+  display: block;
+  margin-bottom: 18px;
+  color: #777;
+  font-size: 2rem;
+}
+
+.my-list-empty h2,
+.my-list-no-results h2 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.my-list-empty p,
+.my-list-no-results p {
+  margin: 0 auto 20px;
+  max-width: 330px;
+  color: #929292;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.my-list-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 19px;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.my-list-primary-btn:hover {
+  background: rgba(255, 255, 255, 0.78);
+  color: #111;
+}
+
+.my-list-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(410px, calc(100% - 32px));
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 4px;
+  background: rgba(28, 28, 28, 0.96);
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.48);
+  font-size: 0.84rem;
+}
+
+.my-list-toast i {
+  color: #46d369;
+}
+
+.my-list-skeleton-card {
+  min-width: 0;
+}
+
+.my-list-skeleton-poster,
+.my-list-skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background: #252525;
+}
+
+.my-list-skeleton-poster::after,
+.my-list-skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
+  animation: myListShimmer 1.2s infinite;
+}
+
+.my-list-skeleton-poster {
+  aspect-ratio: 2 / 3;
+  border-radius: 5px;
+}
+
+.my-list-skeleton-line {
+  width: 82%;
+  height: 11px;
+  margin-top: 11px;
+  border-radius: 2px;
+}
+
+.my-list-skeleton-line.short {
+  width: 43%;
+  height: 8px;
+  margin-top: 7px;
+}
+
+@keyframes myListShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 900px) {
+  .my-list-container {
+    width: calc(100% - 40px);
+  }
+
+  .my-list-header {
+    padding-top: calc(var(--nav-height, 60px) + 42px);
+  }
+
+  .my-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .my-list-filters {
+    gap: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .my-list-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .my-list-search {
+    width: 100%;
+  }
+
+  .my-list-filters button::after {
+    bottom: -10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .my-list-container {
+    width: calc(100% - 28px);
+  }
+
+  .my-list-header {
+    padding-top: calc(var(--nav-height, 60px) + 30px);
+    padding-bottom: 22px;
+  }
+
+  .my-list-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .my-list-header p {
+    margin-top: 6px;
+    font-size: 0.86rem;
+  }
+
+  .my-list-content {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .my-list-toolbar {
+    margin-bottom: 20px;
+  }
+
+  .my-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 9px;
+  }
+
+  .my-list-poster-wrap,
+  .my-list-skeleton-poster {
+    border-radius: 10px;
+  }
+
+  .my-list-card-info {
+    padding-top: 8px;
+  }
+
+  .my-list-card-info h2 {
+    font-size: 0.82rem;
+  }
+
+  .my-list-card-meta {
+    font-size: 0.69rem;
+  }
+
+  .my-list-card-overlay {
+    display: none;
+  }
+
+  .my-list-remove-btn {
+    top: 7px;
+    right: 7px;
+    width: 30px;
+    height: 30px;
+    opacity: 1;
+    background: rgba(12, 12, 12, 0.78);
+  }
+
+  .my-list-empty,
+  .my-list-no-results {
+    margin-top: 38px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .my-list-toast {
+    right: 14px;
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 28px);
+  }
+}
+
+@media (hover: none) {
+  .my-list-card:hover .my-list-poster-wrap img {
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-list-poster-wrap img,
+  .my-list-card-overlay,
+  .my-list-remove-btn {
+    transition: none;
+  }
+
+  .my-list-skeleton-poster::after,
+  .my-list-skeleton-line::after,
+  .my-list-remove-btn .bi-arrow-repeat {
+    animation: none;
+  }
+}

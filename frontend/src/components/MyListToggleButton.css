@@ -1,0 +1,102 @@
+.my-list-toggle-card {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 8;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.movie-card:hover .my-list-toggle-card,
+.pv-card:hover .my-list-toggle-card,
+.carousel-card:hover .my-list-toggle-card,
+.content-card:hover .my-list-toggle-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.my-list-toggle-card:hover {
+  background: rgba(242, 14, 14, 0.9);
+  border-color: transparent;
+}
+
+.my-list-toggle-card.active {
+  opacity: 1;
+  transform: translateY(0);
+  background: rgba(242, 14, 14, 0.9);
+  border-color: rgba(242, 14, 14, 0.9);
+}
+
+.my-list-toggle-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.my-list-toggle-hero {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 22px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+  font-size: 0.93rem;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.my-list-toggle-hero:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.my-list-toggle-hero.active {
+  background: rgba(242, 14, 14, 0.92);
+  border-color: rgba(242, 14, 14, 0.92);
+}
+
+.my-list-toggle-hero:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+.my-list-toggle-spin {
+  animation: myListToggleSpin 0.8s linear infinite;
+}
+
+@keyframes myListToggleSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (hover: none) {
+  .my-list-toggle-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

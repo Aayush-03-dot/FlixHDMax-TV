@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    {% include "_pwa_head.html" %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Login</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <style type="text/css">
+        /* RESET & BASICS */
+        body { margin: 0; padding: 0; width: 100% !important; background-color: #050505; -webkit-font-smoothing: antialiased; }
+        table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { border: 0; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+        
+        /* TYPOGRAPHY */
+        .font-sans { font-family: 'Inter', Helvetica, Arial, sans-serif; }
+        .font-mono { font-family: 'Roboto Mono', 'Courier New', Courier, monospace; }
+        
+        /* UTILITIES */
+        .hover-text:hover { color: #ffffff !important; }
+        
+        /* RESPONSIVE */
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding: 30px 20px !important; }
+            .mobile-title { font-size: 24px !important; }
+            .otp-code { font-size: 32px !important; letter-spacing: 4px !important; }
+            .wrapper { width: 100% !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+
+<body style="background-color: #050505; margin: 0; padding: 0;">
+
+    <div style="display:none;font-size:1px;color:#050505;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+        {{ otp }} is your verification code. Do not share this with anyone.
+    </div>
+
+    <center style="width: 100%; background-color: #050505;">
+        
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #050505;">
+            <tr>
+                <td align="center" style="padding: 40px 10px;">
+
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 480px;">
+                        <tr>
+                            <td align="center" style="padding-bottom: 30px;">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="font-family: 'Inter', Arial, sans-serif; font-weight: 800; font-size: 24px; color: #ffffff; letter-spacing: -0.5px;">
+                                            FLIX<span style="color: #E50914;">HD</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="480" style="max-width: 480px; width: 480px; background-color: #121212; border: 1px solid #262626; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                        <tr>
+                            <td class="mobile-padding" style="padding: 40px;">
+                                
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 25px;">
+                                    <tr>
+                                        <td align="center">
+                                            <span style="background-color: #1F1F1F; border: 1px solid #333; border-radius: 20px; padding: 6px 16px; font-family: 'Inter', Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1px; color: #888888; text-transform: uppercase;">
+                                                Secure System Message
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <h1 class="font-sans mobile-title" style="margin: 0 0 12px 0; color: #ffffff; font-size: 26px; font-weight: 600; text-align: center; letter-spacing: -0.5px;">
+                                    Confirm your sign in
+                                </h1>
+
+                                <p class="font-sans" style="margin: 0 0 30px 0; color: #a1a1aa; font-size: 14px; line-height: 24px; text-align: center;">
+                                    We received a request to access your FlixHD account. Use the code below to complete the verification.
+                                </p>
+
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 30px;">
+                                    <tr>
+                                        <td align="center">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                <tr>
+                                                    <td align="center" style="background-color: #000000; border: 1px solid #333333; border-radius: 8px; padding: 25px 0;">
+                                                        <span class="font-mono otp-code" style="font-size: 38px; color: #ffffff; letter-spacing: 8px; font-weight: 500; display: block; line-height: 1;">
+                                                            {{ otp }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td align="center">
+                                            <p class="font-sans" style="margin: 0; color: #52525b; font-size: 12px; line-height: 1.5;">
+                                                Valid for 10 minutes • Single use only
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td height="3" style="background-color: #E50914; border-radius: 0 0 12px 12px; font-size: 0; line-height: 0;">&nbsp;</td>
+                        </tr>
+                    </table>
+
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 480px; margin-top: 30px;">
+                        <tr>
+                            <td align="center" style="padding-bottom: 20px;">
+                                <p class="font-sans" style="margin: 0; color: #444444; font-size: 12px; line-height: 20px;">
+                                    If you didn't request this code, you can safely ignore this email.<br>
+                                    <a href="#" style="color: #666666; text-decoration: underline;">Manage Account</a> &nbsp;|&nbsp; <a href="#" style="color: #666666; text-decoration: underline;">Support</a>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center">
+                                <p class="font-sans" style="margin: 0; color: #333333; font-size: 11px;">
+                                    © 2025 FlixHD, Inc.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                </td>
+            </tr>
+        </table>
+    </center>
+    <script>
+(function(){
+  const KEY = "flixhd_analytics_sid";
+
+  function makeId(){
+    try{
+      return (crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now()+"-"+Math.random());
+    }catch(e){
+      return (Date.now()+"-"+Math.random());
+    }
+  }
+
+  let sid = null;
+  try{
+    sid = localStorage.getItem(KEY);
+    if(!sid){
+      sid = makeId();
+      localStorage.setItem(KEY, sid);
+    }
+  }catch(e){
+    // localStorage blocked (rare) → fall back to memory id
+    sid = makeId();
+  }
+
+  const queue = [];
+  let flushTimer = null;
+
+  function push(event_name, properties){
+    // ✅ guard
+    if(!event_name) return;
+
+    queue.push({
+      ts: Date.now(),
+      event_name,
+      path: location.pathname + location.search,
+      referrer: document.referrer || null,
+      properties: properties || {}
+    });
+
+    if(!flushTimer) flushTimer = setTimeout(flush, 2500);
+  }
+
+  async function flush(){
+    flushTimer = null;
+
+    // ✅ hard guards to stop 400 forever
+    if(!sid) return;
+    if(queue.length === 0) return;
+
+    const batch = queue.splice(0, 50);
+    if(!Array.isArray(batch) || batch.length === 0) return;
+
+    try{
+      await fetch("/api/analytics/track", {
+        method: "POST",
+        credentials: "same-origin", // ✅ include login cookie
+        headers: {"Content-Type":"application/json"},
+        keepalive: true,
+        body: JSON.stringify({ session_id: String(sid), events: batch })
+      });
+    }catch(e){
+      // if offline, put events back (optional)
+      queue.unshift(...batch);
+      if(!flushTimer) flushTimer = setTimeout(flush, 5000);
+    }
+
+    if(queue.length && !flushTimer) flushTimer = setTimeout(flush, 2500);
+  }
+
+  // expose
+  window.flixTrack = push;
+
+  // initial events
+  push("page_view");
+
+  setInterval(() => {
+    if(document.visibilityState === "visible") push("heartbeat");
+  }, 15000);
+
+})();
+</script>
+{% include "_pwa_scripts.html" %}
+</body>
+</html>

@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application'
+}
+
+def debugAppUrl = project.findProperty('appUrl') ?: 'http://172.16.0.189:5173/'
+def releaseAppUrl = project.findProperty('releaseAppUrl') ?: 'https://tv.flixhdmax.com/'
+
+android {
+    namespace 'com.flixhdmax.tv'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.flixhdmax.tv'
+        minSdk 22
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        debug {
+            // Change this to the Windows development laptop IP before building.
+            buildConfigField 'String', 'APP_URL', '"' + debugAppUrl + '"'
+            manifestPlaceholders = [usesCleartextTraffic: 'true']
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+
+        release {
+            buildConfigField 'String', 'APP_URL', '"' + releaseAppUrl + '"'
+            manifestPlaceholders = [usesCleartextTraffic: 'false']
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}

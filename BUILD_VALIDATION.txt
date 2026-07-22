@@ -1,0 +1,11 @@
+FlixHDMax TV-only validation
+
+Passed:
+- TypeScript project check: tsc -b
+- ESLint: App entry, TV source, main entry and Vite configuration
+- TV routes use root paths with no /tv prefix
+- Fire TV key mappings include browser and Android key codes
+
+Not executed in the Linux validation environment:
+- Final Vite bundle, because the uploaded node_modules contained the Windows Rolldown native binding. Run npm ci on the Windows development machine before npm run build.
+- Android APK compilation, because Android SDK/Gradle were not installed in the validation environment. Open firetv-apk in Android Studio.
