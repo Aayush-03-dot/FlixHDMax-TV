@@ -11,6 +11,12 @@ type FocusableElement = HTMLElement & {
   disabled?: boolean
 }
 
+declare global {
+  interface Window {
+    __flixTVHandleNativeKey?: (keyCode: number) => boolean
+  }
+}
+
 function isVisible(element: HTMLElement) {
   const style = window.getComputedStyle(element)
   const rect = element.getBoundingClientRect()
@@ -54,12 +60,12 @@ function getNextElement(current: HTMLElement, direction: Direction) {
 
       const inDirection =
         direction === 'left'
-          ? dx < -6
+          ? dx < -8
           : direction === 'right'
-            ? dx > 6
+            ? dx > 8
             : direction === 'up'
-              ? dy < -6
-              : dy > 6
+              ? dy < -8
+              : dy > 8
 
       if (!inDirection) return null
 
@@ -78,12 +84,13 @@ function getNextElement(current: HTMLElement, direction: Direction) {
       const overlap = Math.max(0, overlapEnd - overlapStart)
       const overlapRatio = overlap / Math.max(1, Math.min(currentSpan, candidateSpan))
 
-      const lanePenalty = overlapRatio > 0.2 ? 0 : secondaryDistance * 2.8
-      const secondaryPenalty = secondaryDistance * (horizontal ? 1.15 : 1.35)
+      const sameLaneBonus = overlapRatio > 0.35 ? -Math.min(140, primaryDistance * 0.2) : 0
+      const crossLanePenalty = secondaryDistance * (horizontal ? 1.65 : 1.9)
+      const navPenalty = candidate.closest('.tv-top-nav') && direction !== 'up' ? 240 : 0
 
       return {
         candidate,
-        score: primaryDistance + secondaryPenalty + lanePenalty,
+        score: primaryDistance + crossLanePenalty + navPenalty + sameLaneBonus,
       }
     })
     .filter((value): value is { candidate: FocusableElement; score: number } =>
@@ -115,42 +122,20 @@ function focusElement(element: HTMLElement | null) {
   return document.activeElement === element
 }
 
-function keyCodeOf(event: KeyboardEvent) {
-  return event.keyCode || event.which || 0
-}
-
-function normalizedDirection(event: KeyboardEvent): Direction | null {
-  const keyCode = keyCodeOf(event)
-
-  if (event.key === 'ArrowLeft' || keyCode === 37 || keyCode === 21) return 'left'
-  if (event.key === 'ArrowRight' || keyCode === 39 || keyCode === 22) return 'right'
-  if (event.key === 'ArrowUp' || keyCode === 38 || keyCode === 19) return 'up'
-  if (event.key === 'ArrowDown' || keyCode === 40 || keyCode === 20) return 'down'
-
+function directionFromCode(keyCode: number): Direction | null {
+  if (keyCode === 37 || keyCode === 21) return 'left'
+  if (keyCode === 39 || keyCode === 22) return 'right'
+  if (keyCode === 38 || keyCode === 19) return 'up'
+  if (keyCode === 40 || keyCode === 20) return 'down'
   return null
 }
 
-function isSelectKey(event: KeyboardEvent) {
-  const keyCode = keyCodeOf(event)
-
-  return (
-    event.key === 'Enter' ||
-    event.key === 'Select' ||
-    event.code === 'Enter' ||
-    event.code === 'NumpadEnter' ||
-    keyCode === 13 ||
-    keyCode === 23 ||
-    keyCode === 66
-  )
+function isSelectCode(keyCode: number) {
+  return keyCode === 13 || keyCode === 23 || keyCode === 66
 }
 
-function isBackKey(event: KeyboardEvent) {
-  const keyCode = keyCodeOf(event)
-
+function isBackCode(keyCode: number) {
   return (
-    event.key === 'Escape' ||
-    event.key === 'BrowserBack' ||
-    event.key === 'GoBack' ||
     keyCode === 4 ||
     keyCode === 8 ||
     keyCode === 27 ||
@@ -180,6 +165,16 @@ function activateFocusedElement(element: HTMLElement | null) {
   return true
 }
 
+function keyCodeOf(event: KeyboardEvent) {
+  if (event.key === 'ArrowLeft') return 37
+  if (event.key === 'ArrowRight') return 39
+  if (event.key === 'ArrowUp') return 38
+  if (event.key === 'ArrowDown') return 40
+  if (event.key === 'Enter' || event.key === 'Select') return 13
+  if (event.key === 'Escape' || event.key === 'BrowserBack' || event.key === 'GoBack') return 4
+  return event.keyCode || event.which || 0
+}
+
 export function useTVRemoteNavigation() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -206,13 +201,58 @@ export function useTVRemoteNavigation() {
       )
     }
 
-    const focusTimer = window.setTimeout(restoreFocus, 90)
+    const handleCode = (keyCode: number) => {
+      const active = document.activeElement as HTMLElement | null
+      const textControl = isTextControl(active)
+
+      if (isBackCode(keyCode)) {
+        if (textControl && active instanceof HTMLElement) {
+          active.blur()
+          window.setTimeout(restoreFocus, 0)
+          return true
+        }
+
+        if (location.pathname !== getTVHomePath()) {
+          navigate(-1)
+          return true
+        }
+
+        return false
+      }
+
+      if (isSelectCode(keyCode)) {
+        const now = Date.now()
+        if (now - lastSelectAt < 220) return true
+        lastSelectAt = now
+        return activateFocusedElement(active)
+      }
+
+      const direction = directionFromCode(keyCode)
+      if (!direction || textControl) return false
+
+      const current =
+        active && active.matches(FOCUSABLE_SELECTOR)
+          ? active
+          : document.querySelector<HTMLElement>('[data-tv-autofocus="true"]') ||
+            document.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+
+      if (!current) return false
+
+      const next = getNextElement(current, direction)
+      if (next) return focusElement(next)
+
+      return true
+    }
+
+    window.__flixTVHandleNativeKey = handleCode
+
+    const focusTimer = window.setTimeout(restoreFocus, 100)
 
     const observer = new MutationObserver(() => {
       const active = document.activeElement as HTMLElement | null
 
       if (!active || active === document.body || !isVisible(active)) {
-        restoreFocus()
+        window.setTimeout(restoreFocus, 0)
       }
     })
 
@@ -229,9 +269,7 @@ export function useTVRemoteNavigation() {
       element.classList.add('is-tv-focused')
 
       const key = element.dataset.tvKey
-      if (key) {
-        sessionStorage.setItem(`tv-focus:${location.pathname}`, key)
-      }
+      if (key) sessionStorage.setItem(`tv-focus:${location.pathname}`, key)
     }
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -242,56 +280,12 @@ export function useTVRemoteNavigation() {
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const active = document.activeElement as HTMLElement | null
-      const textControl = isTextControl(active)
+      if (event.repeat && isSelectCode(keyCodeOf(event))) return
 
-      if (isBackKey(event)) {
-        if (textControl && active instanceof HTMLElement) {
-          active.blur()
-          restoreFocus()
-          event.preventDefault()
-          event.stopPropagation()
-          return
-        }
-
-        if (location.pathname !== getTVHomePath()) {
-          event.preventDefault()
-          event.stopPropagation()
-          navigate(-1)
-        }
-        return
+      if (handleCode(keyCodeOf(event))) {
+        event.preventDefault()
+        event.stopPropagation()
       }
-
-      if (isSelectKey(event)) {
-        if (event.repeat) return
-
-        const now = Date.now()
-        if (now - lastSelectAt < 250) return
-        lastSelectAt = now
-
-        if (activateFocusedElement(active)) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        return
-      }
-
-      const direction = normalizedDirection(event)
-      if (!direction || textControl) return
-
-      event.preventDefault()
-      event.stopPropagation()
-
-      const current =
-        active && active.matches(FOCUSABLE_SELECTOR)
-          ? active
-          : document.querySelector<HTMLElement>('[data-tv-autofocus="true"]') ||
-            document.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
-
-      if (!current) return
-
-      const next = getNextElement(current, direction)
-      if (next) focusElement(next)
     }
 
     document.addEventListener('focusin', handleFocus, true)
@@ -304,6 +298,7 @@ export function useTVRemoteNavigation() {
       document.removeEventListener('focusin', handleFocus, true)
       document.removeEventListener('pointerdown', handlePointerDown, true)
       window.removeEventListener('keydown', handleKeyDown, true)
+      delete window.__flixTVHandleNativeKey
       clearFocusClass()
       document.documentElement.classList.remove('tv-document')
       document.body.classList.remove('tv-body')

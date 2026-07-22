@@ -1,22 +1,10 @@
 # FlixHDMax TV
 
-This project is a television-only FlixHDMax client. It does not expose the desktop or mobile interface and does not use a `/tv` path.
+TV-only React/Vite frontend and Fire TV APK wrapper for FlixHDMax.
 
-## Routes
+## Local development
 
-- `/` — TV home
-- `/login` — TV login
-- `/search` — TV search
-- `/movies` — movies
-- `/shows` — series
-- `/my-list` — My List
-- `/movie/:id` — movie details
-- `/series/:id` — series and episodes
-- `/profile` — profile and sign out
-
-## Windows development
-
-Start the existing Flask backend on port 5000.
+Start the FlixHDMax backend:
 
 ```powershell
 cd Backend\FlixHDMax_Backend
@@ -24,58 +12,68 @@ cd Backend\FlixHDMax_Backend
 flask run --host=0.0.0.0 --port=5000
 ```
 
-Start the TV frontend:
+Start the TV frontend in another PowerShell window:
 
 ```powershell
 cd frontend
-Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
 npm ci
 npm run dev
 ```
 
-Open on the development laptop:
+Open the application on the laptop:
 
 ```text
 http://localhost:5173/
 ```
 
-Open on Fire TV or another device on the same network:
+Open it from a Fire TV on the same network:
 
 ```text
-http://YOUR-LAPTOP-IP:5173/
+http://YOUR_WINDOWS_IPV4:5173/
 ```
-
-No `/tv` suffix is used.
 
 ## Remote controls
 
 - D-pad: move focus
-- Centre/Select: activate focused control
-- Back: previous screen; when the TV keyboard is open, Back closes the keyboard first
-- Keyboard development: arrow keys, Enter and Escape/Backspace
+- Centre/Select: activate
+- Back: return; from Home it exits the APK
+- Media play/pause, rewind, and fast-forward: native hosted-video player
 
-The JavaScript handler supports browser key codes and Android/Fire TV key codes.
+## Build the APK without Android Studio
 
-## Production
+Push the project to GitHub, then run:
 
-Build:
+```text
+Actions → Build Fire TV APK → Run workflow
+```
+
+For local testing, enter:
+
+```text
+http://YOUR_WINDOWS_IPV4:5173/
+```
+
+For production, enter:
+
+```text
+https://tv.flixhdmax.com/
+```
+
+Download the `FlixHDMax-TV-APK` artifact and extract `app-debug.apk`.
+
+Install it with Android Platform Tools:
 
 ```powershell
-npm run build
+cd C:\platform-tools
+.\adb.exe connect FIRE_TV_IP:5555
+.\adb.exe install -r "C:\path\to\app-debug.apk"
 ```
 
-Deploy the generated `frontend/dist` files to `https://tv.flixhdmax.com` and configure Nginx to send client-side routes to `index.html`.
+An older debug APK signed by another build key must be removed once:
 
-## Build an APK without Android Studio
-
-Use the included GitHub Actions workflow:
-
-```text
-.github/workflows/build-firetv-apk.yml
+```powershell
+.\adb.exe uninstall com.flixhdmax.tv.debug
+.\adb.exe install "C:\path\to\app-debug.apk"
 ```
 
-Instructions:
-
-```text
-docs/BUILD_APK_WITHOUT_ANDROID_STUDIO.md
-```
+The workflow caches the v2 debug signing key, so subsequent v2 APKs can normally be installed with `-r`.

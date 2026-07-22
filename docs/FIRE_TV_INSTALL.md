@@ -1,80 +1,69 @@
-# Fire TV testing and installation
+# Install and test FlixHDMax TV on Fire TV
 
-## Browser/PWA limitation
+## Local website test
 
-Amazon Silk can open the hosted FlixHDMax TV site, but it does not provide the normal Chrome-style PWA installation or Add to Home Screen flow. Installing another browser is not the correct solution because it still does not create a proper Fire TV launcher application.
+Run the backend:
 
-Use one of these paths:
+```powershell
+cd Backend\FlixHDMax_Backend
+.\venv\Scripts\Activate.ps1
+flask run --host=0.0.0.0 --port=5000
+```
 
-1. Amazon Web App Tester for hosted-app development testing.
-2. The included Android WebView wrapper to create and sideload an APK.
-3. Submit the hosted or hybrid app to the Amazon Appstore for production distribution.
+Run the frontend in another terminal:
 
-## Test the local web app with Amazon Web App Tester
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
 
-1. Install **Web App Tester** from the Amazon Appstore on Fire TV.
-2. Start the FlixHDMax backend and frontend on the Windows laptop.
-3. Keep the laptop and Fire TV on the same network.
-4. Open Web App Tester, choose **Hosted Apps**, and enter:
+Open this from Fire TV Silk or Amazon Web App Tester:
 
 ```text
-http://YOUR-LAPTOP-IP:5173/
+http://YOUR_WINDOWS_IPV4:5173/
 ```
 
-A sample `firetv-testing/amazon.testerurls.json` file is included. Replace the IP when the development laptop address changes.
+The Fire TV and laptop must be on the same network. The Windows firewall must allow port 5173.
 
-## Build the Fire TV APK
+## Build the installable APK on GitHub
 
-The `firetv-apk` directory is a small full-screen Android WebView launcher.
+1. Push the project to GitHub.
+2. Open `Actions`.
+3. Select `Build Fire TV APK`.
+4. Select `Run workflow`.
+5. Enter `http://YOUR_WINDOWS_IPV4:5173/` for local testing.
+6. Download the `FlixHDMax-TV-APK` artifact.
+7. Extract `app-debug.apk`.
 
-1. Open `firetv-apk` in Android Studio.
-2. Install Android SDK 35 when prompted.
-3. Use JDK 17.
-4. In `firetv-apk/app/build.gradle`, change the debug `APP_URL` to the laptop IP:
-
-```gradle
-buildConfigField 'String', 'APP_URL', '"http://YOUR-LAPTOP-IP:5173/"'
-```
-
-5. Select **Build > Build APK(s)**.
-6. The debug APK is created at:
-
-```text
-firetv-apk\app\build\outputs\apk\debug\app-debug.apk
-```
-
-The release build already points to:
+For the production build, use:
 
 ```text
 https://tv.flixhdmax.com/
 ```
 
-## Sideload the APK
+## Install through ADB
 
-Enable Fire TV developer options:
-
-1. Settings > My Fire TV > About.
-2. Select the Fire TV device name seven times if Developer Options is hidden.
-3. Enable ADB Debugging.
-4. Enable installation from unknown sources for the installer being used.
-5. Find the Fire TV IP under Settings > My Fire TV > About > Network.
-
-From Windows PowerShell with Android Platform Tools installed:
+Enable Fire TV Developer Options and ADB Debugging, then run:
 
 ```powershell
-adb connect FIRE_TV_IP:5555
-adb devices
-adb install -r "C:\path\to\app-debug.apk"
+cd C:\platform-tools
+.\adb.exe connect FIRE_TV_IP:5555
+.\adb.exe devices
+.\adb.exe install -r "C:\path\to\app-debug.apk"
 ```
 
-Accept the debugging prompt on Fire TV. The app then appears as **FlixHDMax TV** in the Fire TV applications list.
+When replacing an APK signed by an older workflow key, uninstall it once:
 
-## Local PWA testing on a computer
-
-The development service worker is enabled. Chrome or Edge can test installation at:
-
-```text
-http://localhost:5173/
+```powershell
+.\adb.exe uninstall com.flixhdmax.tv.debug
+.\adb.exe install "C:\path\to\app-debug.apk"
 ```
 
-PWA installation generally requires a secure context. `localhost` is treated specially, but a plain local-network URL such as `http://172.16.0.189:5173/` is not a secure context. This does not affect hosted testing in Silk or Web App Tester.
+The v2 workflow caches its debug signing key. Later v2 APKs can normally be installed with `-r`.
+
+## Playback architecture
+
+- Hosted FlixHDMax HLS video opens in the APK's native Media3/ExoPlayer player.
+- Iframe providers open in the full-screen TV WebView player.
+- Browser testing uses Hls.js when the browser does not support HLS directly.

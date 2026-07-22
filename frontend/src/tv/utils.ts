@@ -11,14 +11,6 @@ type TVArtworkSource = {
   poster_url?: string | null
 }
 
-export function isTVHostname() {
-  return true
-}
-
-export function getTVBasePath() {
-  return ''
-}
-
 export function tvPath(path = '/') {
   const normalized = path.startsWith('/') ? path : `/${path}`
   return normalized || '/'
@@ -34,7 +26,7 @@ export function detailPath(item: Pick<HomeItem, 'id' | 'content_type'>) {
 
 export function resolveMediaUrl(
   value?: string | null,
-  fallback = '/pwa-512x512.png'
+  fallback = '/admin-logo.png'
 ) {
   if (!value) return fallback
 
@@ -53,7 +45,7 @@ export function resolveMediaUrl(
 }
 
 export function getItemArtwork(item?: TVArtworkSource | null) {
-  if (!item) return '/pwa-512x512.png'
+  if (!item) return '/admin-logo.png'
 
   return resolveMediaUrl(
     item.backdrop_display ||
@@ -67,7 +59,7 @@ export function getItemArtwork(item?: TVArtworkSource | null) {
 }
 
 export function getPosterArtwork(item?: TVArtworkSource | null) {
-  if (!item) return '/pwa-512x512.png'
+  if (!item) return '/admin-logo.png'
 
   return resolveMediaUrl(
     item.poster_display ||
@@ -120,15 +112,4 @@ export function normalizeMyListItem(item: TVMyListItem): HomeItem {
       item.display_thumbnail,
     in_my_list: true,
   }
-}
-
-export function resolveHostedWatchUrl(
-  rawUrl: string,
-  backPath: string,
-  title: string
-) {
-  const hostedUrl = new URL(rawUrl, window.location.origin)
-  hostedUrl.searchParams.set('back', backPath)
-  hostedUrl.searchParams.set('title', title)
-  return hostedUrl.toString()
 }

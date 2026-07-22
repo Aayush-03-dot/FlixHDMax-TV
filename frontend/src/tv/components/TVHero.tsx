@@ -22,17 +22,17 @@ function TVHero({ item }: { item: HomeItem }) {
         alt=""
         fetchPriority="high"
         onError={(event) => {
-          event.currentTarget.src = '/pwa-512x512.png'
+          event.currentTarget.src = '/admin-logo.png'
         }}
       />
       <div className="tv-hero-overlay" />
 
       <div className="tv-hero-content">
-        <p className="tv-kicker">Featured on FlixHDMax</p>
+        <p className="tv-kicker">Featured</p>
         <h1>{item.title}</h1>
 
         <div className="tv-hero-meta">
-          {rating && <span>{rating} rating</span>}
+          {rating && <span>{rating}</span>}
           {year && <span>{year}</span>}
           <span>{item.content_type === 'series' ? 'TV Series' : 'Movie'}</span>
           <span className="tv-quality-badge">HD</span>

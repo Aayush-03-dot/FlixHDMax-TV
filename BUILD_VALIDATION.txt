@@ -1,11 +1,16 @@
-FlixHDMax TV-only validation
+FlixHDMax TV v2 validation
 
 Passed:
-- TypeScript project check: tsc -b
-- ESLint: App entry, TV source, main entry and Vite configuration
-- TV routes use root paths with no /tv prefix
-- Fire TV key mappings include browser and Android key codes
+- TypeScript project compilation: tsc -b
+- ESLint: App.tsx, TV source, API service
+- Python syntax compilation: Backend/FlixHDMax_Backend/routes/video_routes.py
+- JSON parsing: package.json, package-lock.json, TV manifest
+- XML parsing: AndroidManifest.xml
+- YAML parsing: Fire TV GitHub Actions workflow
+- Obsolete sidebar component removed
+- TV runtime routes only; no /tv prefix
+- Hosted video API and native-player route connected
 
-Not executed in the Linux validation environment:
-- Final Vite bundle, because the uploaded node_modules contained the Windows Rolldown native binding. Run npm ci on the Windows development machine before npm run build.
-- Android APK compilation, because Android SDK/Gradle were not installed in the validation environment. Open firetv-apk in Android Studio.
+Environment limitation:
+- The final Vite bundle was not executed in this Linux container because the source dependency folder came from Windows and contained a Windows-only Rolldown binary. The returned archive excludes node_modules. Run npm ci on Windows or in GitHub Actions before npm run build.
+- The Android APK was not compiled locally because Android SDK/Gradle are not installed in this environment. The GitHub Actions workflow performs the actual APK build.

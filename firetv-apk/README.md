@@ -1,31 +1,33 @@
-# FlixHDMax Fire TV APK wrapper
+# FlixHDMax Fire TV application
 
-This Android project opens the TV-only FlixHDMax site in a hardware-accelerated full-screen WebView and exposes it as a Fire TV launcher application.
+The APK opens the TV-only FlixHDMax frontend in a full-screen WebView. Hosted FlixHDMax HLS streams are transferred to a native Media3/ExoPlayer activity.
 
-## Debug URL
+## URL selection
 
-Edit `app/build.gradle` and set the debug `APP_URL` to the local development laptop:
-
-```gradle
-buildConfigField 'String', 'APP_URL', '"http://YOUR-LAPTOP-IP:5173/"'
-```
-
-## Release URL
-
-The release build points to:
+The GitHub Actions `app_url` input overrides the debug address in `app/build.gradle`.
 
 ```text
-https://tv.flixhdmax.com/
+Local:       http://YOUR_WINDOWS_IPV4:5173/
+Production:  https://tv.flixhdmax.com/
 ```
 
-## Build
+## Cloud build
 
-Open this directory in Android Studio, use JDK 17 and install Android SDK 35. Android Gradle Plugin 8.7.3 requires Gradle 8.9. Configure Android Studio to use Gradle 8.9 if it does not create a wrapper automatically.
-
-Build the debug APK from **Build > Build APK(s)**.
-
-Output:
+Use:
 
 ```text
-app/build/outputs/apk/debug/app-debug.apk
+Actions → Build Fire TV APK → Run workflow
+```
+
+The output artifact contains:
+
+```text
+app-debug.apk
+```
+
+## Package IDs
+
+```text
+Debug:   com.flixhdmax.tv.debug
+Release: com.flixhdmax.tv
 ```

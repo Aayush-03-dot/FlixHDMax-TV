@@ -25,7 +25,7 @@ function TVProfilePage() {
     <TVShell>
       <section className="tv-profile-page">
         <header className="tv-page-header">
-          <p className="tv-kicker">Account and device</p>
+          <p className="tv-kicker">Account</p>
           <h1>Profile</h1>
         </header>
 
@@ -40,17 +40,15 @@ function TVProfilePage() {
             </div>
             <div>
               <h2>{displayName}</h2>
-              <p>{user?.email || 'Signed in to FlixHDMax'}</p>
+              <p>{user?.email || 'Signed in'}</p>
             </div>
           </article>
 
           <article className="tv-settings-card">
             <Monitor aria-hidden="true" />
             <div>
-              <h2>TV application</h2>
-              <p>
-                D-pad navigation, remote Select, remote Back, landscape layout and visible focus are enabled.
-              </p>
+              <h2>FlixHDMax TV</h2>
+              <p>Fire TV · Android TV</p>
             </div>
           </article>
         </div>
@@ -58,7 +56,7 @@ function TVProfilePage() {
         <div className="tv-profile-actions">
           <button
             type="button"
-            className="tv-primary-button tv-focusable"
+            className="tv-secondary-button tv-focusable"
             onClick={handleLogout}
             data-tv-focusable="true"
             data-tv-autofocus="true"
@@ -67,13 +65,6 @@ function TVProfilePage() {
             <LogOut aria-hidden="true" />
             Sign out
           </button>
-        </div>
-
-        <div className="tv-install-note">
-          <h2>Fire TV installation</h2>
-          <p>
-            Amazon Silk does not provide a standard PWA install button. Install the FlixHDMax Fire TV APK or load this hosted TV site through Amazon Web App Tester during development.
-          </p>
         </div>
       </section>
     </TVShell>

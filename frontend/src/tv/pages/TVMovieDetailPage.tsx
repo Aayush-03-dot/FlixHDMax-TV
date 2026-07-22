@@ -12,9 +12,7 @@ import type { TVMovieDetail, TVMovieDetailResponse } from '../types'
 import {
   formatRating,
   getPosterArtwork,
-  getTVBasePath,
   getYear,
-  resolveHostedWatchUrl,
   resolveMediaUrl,
   tvPath,
 } from '../utils'
@@ -73,13 +71,11 @@ function TVMovieDetailPage() {
   const handlePlay = useCallback(() => {
     if (!item) return
 
-    const rawHostedUrl =
-      item.hosted_watch_url ||
-      (item.hosted_video_id ? `/watch/hosted/${item.hosted_video_id}` : '')
-
-    if (item.video_source_type === 'hosted' && rawHostedUrl) {
-      const backPath = `${getTVBasePath()}/movie/${item.id}`
-      window.location.assign(resolveHostedWatchUrl(rawHostedUrl, backPath, item.title))
+    if (item.video_source_type === 'hosted' && item.hosted_video_id) {
+      const params = new URLSearchParams({ title: item.title })
+      navigate(
+        tvPath(`/player/hosted/${encodeURIComponent(item.hosted_video_id)}?${params.toString()}`)
+      )
       return
     }
 

@@ -46,17 +46,16 @@ function TVLoginPage() {
         <div className="tv-login-shade" />
 
         <header className="tv-login-brand">
-          <span className="tv-brand-mark">F</span>
-          <span>FlixHDMax</span>
+          <img src="/favicon1.png" alt="FlixHDMax" />
           <small>TV</small>
         </header>
 
         <main className="tv-login-main">
           <section className="tv-login-panel">
-            <p className="tv-kicker">Welcome back</p>
-            <h1>Sign in to FlixHDMax TV</h1>
+            <p className="tv-kicker">FlixHDMax TV</p>
+            <h1>Sign in</h1>
             <p className="tv-login-copy">
-              Select a field with the remote to open the television keyboard.
+              Use your FlixHDMax account.
             </p>
 
             <form onSubmit={handleSubmit} className="tv-login-form">

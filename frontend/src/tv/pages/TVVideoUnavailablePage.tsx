@@ -8,9 +8,9 @@ function TVVideoUnavailablePage() {
   return (
     <TVStandalonePage>
       <section className="tv-video-unavailable">
-        <div className="tv-brand-mark">F</div>
-        <h1>Video not available</h1>
-        <p>This title does not currently have a television-compatible player.</p>
+        <img src="/admin-logo.png" alt="FlixHDMax" />
+        <h1>Video unavailable</h1>
+        <p>This title cannot be played right now.</p>
         <button
           type="button"
           className="tv-primary-button tv-focusable"

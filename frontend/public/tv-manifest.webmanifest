@@ -2,7 +2,7 @@
   "id": "/",
   "name": "FlixHDMax TV",
   "short_name": "FlixHDMax TV",
-  "description": "FlixHDMax television interface for large screens and remote controls.",
+  "description": "FlixHDMax streaming application for television and Fire TV.",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",

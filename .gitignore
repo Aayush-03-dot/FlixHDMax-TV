@@ -14,3 +14,15 @@ dist/
 .DS_Store
 .vscode/
 
+# Android and Gradle generated files
+firetv-apk/.gradle/
+firetv-apk/**/build/
+firetv-apk/local.properties
+
+# Frontend generated files
+frontend/node_modules/
+frontend/dist/
+
+# Python generated files
+**/__pycache__/
+*.pyc

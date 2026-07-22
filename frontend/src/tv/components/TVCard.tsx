@@ -1,4 +1,4 @@
-import { Play } from 'lucide-react'
+import { Play, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { HomeItem } from '../../types/home'
 import { detailPath, formatRating, getItemArtwork, getYear } from '../utils'
@@ -32,12 +32,12 @@ function TVCard({
           alt=""
           loading={itemIndex < 6 ? 'eager' : 'lazy'}
           onError={(event) => {
-            event.currentTarget.src = '/pwa-512x512.png'
+            event.currentTarget.src = '/admin-logo.png'
           }}
         />
         <div className="tv-card-shade" />
-        <div className="tv-card-play">
-          <Play fill="currentColor" aria-hidden="true" />
+        <div className="tv-card-play" aria-hidden="true">
+          <Play fill="currentColor" />
         </div>
         {item.in_my_list && <span className="tv-card-list-badge">My List</span>}
       </div>
@@ -45,9 +45,16 @@ function TVCard({
       <div className="tv-card-copy">
         <h3>{item.title}</h3>
         <p>
-          {rating && <span>{rating} rating</span>}
+          {rating && (
+            <span className="tv-card-rating">
+              <Star fill="currentColor" aria-hidden="true" />
+              {rating}
+            </span>
+          )}
           {rating && year && <span className="tv-meta-dot" />}
           {year && <span>{year}</span>}
+          {(rating || year) && <span className="tv-meta-dot" />}
+          <span>{item.content_type === 'series' ? 'Series' : 'Movie'}</span>
         </p>
       </div>
     </Link>

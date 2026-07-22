@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import TVGuestRoute from './tv/components/TVGuestRoute'
 import TVProtectedRoute from './tv/components/TVProtectedRoute'
 import TVHomePage from './tv/pages/TVHomePage'
+import TVHostedPlayerPage from './tv/pages/TVHostedPlayerPage'
 import TVIframePlayerPage from './tv/pages/TVIframePlayerPage'
 import TVLoginPage from './tv/pages/TVLoginPage'
 import TVMovieDetailPage from './tv/pages/TVMovieDetailPage'
@@ -77,6 +78,14 @@ function AppRoutes() {
         element={
           <TVProtectedRoute>
             <TVSeriesDetailPage />
+          </TVProtectedRoute>
+        }
+      />
+      <Route
+        path="/player/hosted/:hostedVideoId"
+        element={
+          <TVProtectedRoute>
+            <TVHostedPlayerPage />
           </TVProtectedRoute>
         }
       />

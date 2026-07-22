@@ -17,9 +17,7 @@ import type {
 import {
   formatRating,
   getPosterArtwork,
-  getTVBasePath,
   getYear,
-  resolveHostedWatchUrl,
   resolveMediaUrl,
   tvPath,
 } from '../utils'
@@ -101,15 +99,13 @@ function TVSeriesDetailPage() {
 
       setSelectedEpisode(episode)
 
-      const rawHostedUrl =
-        episode.hosted_watch_url ||
-        (episode.hosted_video_id ? `/watch/hosted/${episode.hosted_video_id}` : '')
-
       const title = `${item.title} — ${episode.title || `Episode ${episode.number}`}`
 
-      if (episode.video_source_type === 'hosted' && rawHostedUrl) {
-        const backPath = `${getTVBasePath()}/series/${item.id}`
-        window.location.assign(resolveHostedWatchUrl(rawHostedUrl, backPath, title))
+      if (episode.video_source_type === 'hosted' && episode.hosted_video_id) {
+        const params = new URLSearchParams({ title })
+        navigate(
+          tvPath(`/player/hosted/${encodeURIComponent(episode.hosted_video_id)}?${params.toString()}`)
+        )
         return
       }
 

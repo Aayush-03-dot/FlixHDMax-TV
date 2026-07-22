@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTVRemoteNavigation } from '../hooks/useTVRemoteNavigation'
 import TVDocumentMetadata from './TVDocumentMetadata'
-import TVSidebar from './TVSidebar'
+import TVTopNav from './TVTopNav'
 
 function TVShell({ children }: { children: ReactNode }) {
   useTVRemoteNavigation()
@@ -9,7 +9,7 @@ function TVShell({ children }: { children: ReactNode }) {
   return (
     <div className="tv-app-shell">
       <TVDocumentMetadata />
-      <TVSidebar />
+      <TVTopNav />
       <main className="tv-main-content">{children}</main>
     </div>
   )

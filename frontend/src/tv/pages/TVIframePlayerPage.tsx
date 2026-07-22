@@ -77,17 +77,24 @@ function TVIframePlayerPage() {
   return (
     <TVStandalonePage>
       <div className="tv-player-page">
-        <button
-          type="button"
-          className="tv-player-back tv-focusable"
-          onClick={() => navigate(-1)}
-          data-tv-focusable="true"
-          data-tv-autofocus="true"
-          data-tv-key="player-back"
-        >
-          <ArrowLeft aria-hidden="true" />
-          Back
-        </button>
+        <div className="tv-player-toolbar">
+          <button
+            type="button"
+            className="tv-player-back tv-focusable"
+            onClick={() => navigate(-1)}
+            data-tv-focusable="true"
+            data-tv-key="player-back"
+          >
+            <ArrowLeft aria-hidden="true" />
+            Back
+          </button>
+          {content && (
+            <div className="tv-player-heading">
+              <span>Now playing</span>
+              <strong>{content.title}</strong>
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <TVLoading label="Opening player" />
@@ -98,13 +105,10 @@ function TVIframePlayerPage() {
             onRetry={() => navigate(-1)}
           />
         ) : (
-          <>
-            <div className="tv-player-title">{content.title}</div>
-            <div
+          <div
               className="tv-iframe-player"
               dangerouslySetInnerHTML={{ __html: content.embedCode }}
             />
-          </>
         )}
       </div>
     </TVStandalonePage>
