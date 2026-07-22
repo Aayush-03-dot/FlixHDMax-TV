@@ -2,6 +2,7 @@ package com.flixhdmax.tv;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -56,7 +58,7 @@ public final class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         settings.setUserAgentString(
-            settings.getUserAgentString() + " FlixHDMaxTV/2.0 FireTV"
+            settings.getUserAgentString() + " FlixHDMaxTV/3.0 FireTV"
         );
 
         CookieManager cookieManager = CookieManager.getInstance();
@@ -64,6 +66,7 @@ public final class MainActivity extends Activity {
         cookieManager.setAcceptThirdPartyCookies(webView, true);
 
         webView.addJavascriptInterface(new TVPlayerBridge(), "AndroidTVPlayer");
+        webView.addJavascriptInterface(new TVInputBridge(), "AndroidTVInput");
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -199,6 +202,7 @@ public final class MainActivity extends Activity {
 
         if (webView != null) {
             webView.removeJavascriptInterface("AndroidTVPlayer");
+            webView.removeJavascriptInterface("AndroidTVInput");
             webView.loadUrl("about:blank");
             webView.stopLoading();
             webView.destroy();
@@ -244,6 +248,22 @@ public final class MainActivity extends Activity {
             View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         );
+    }
+
+    private final class TVInputBridge {
+        @JavascriptInterface
+        public void hideKeyboard() {
+            runOnUiThread(() -> {
+                InputMethodManager inputMethodManager =
+                    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                if (inputMethodManager == null || webView == null) return;
+
+                View focusedView = getCurrentFocus();
+                View tokenView = focusedView == null ? webView : focusedView;
+                inputMethodManager.hideSoftInputFromWindow(tokenView.getWindowToken(), 0);
+            });
+        }
     }
 
     private final class TVPlayerBridge {

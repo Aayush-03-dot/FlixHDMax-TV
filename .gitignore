@@ -10,19 +10,15 @@ venv/
 node_modules/
 dist/
 
-# System/editor
-.DS_Store
-.vscode/
-
-# Android and Gradle generated files
+# Android / Gradle generated files
+.gradle/
 firetv-apk/.gradle/
 firetv-apk/**/build/
 firetv-apk/local.properties
+*.apk
+*.aab
 
-# Frontend generated files
-frontend/node_modules/
-frontend/dist/
-
-# Python generated files
-**/__pycache__/
-*.pyc
+# System/editor
+.DS_Store
+.vscode/
+.idea/

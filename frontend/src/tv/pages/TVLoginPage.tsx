@@ -66,10 +66,13 @@ function TVLoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   autoComplete="email"
+                  inputMode="email"
+                  enterKeyHint="next"
                   required
                   data-tv-focusable="true"
                   data-tv-autofocus="true"
                   data-tv-key="login-email"
+                  data-tv-next-down="login-password"
                 />
               </label>
 
@@ -81,9 +84,13 @@ function TVLoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     autoComplete="current-password"
+                    enterKeyHint="done"
                     required
                     data-tv-focusable="true"
                     data-tv-key="login-password"
+                    data-tv-next-up="login-email"
+                    data-tv-next-right="login-show-password"
+                    data-tv-next-down="login-submit"
                   />
                   <button
                     type="button"
@@ -91,6 +98,9 @@ function TVLoginPage() {
                     onClick={() => setShowPassword((current) => !current)}
                     data-tv-focusable="true"
                     data-tv-key="login-show-password"
+                    data-tv-next-left="login-password"
+                    data-tv-next-up="login-email"
+                    data-tv-next-down="login-submit"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
@@ -100,12 +110,17 @@ function TVLoginPage() {
 
               {error && <div className="tv-login-error">{error}</div>}
 
+              <p className="tv-login-remote-hint">
+                Press Select to type. Use Up and Down to move between fields.
+              </p>
+
               <button
                 type="submit"
                 className="tv-primary-button tv-login-submit tv-focusable"
                 disabled={loading}
                 data-tv-focusable="true"
                 data-tv-key="login-submit"
+                data-tv-next-up="login-password"
               >
                 <LogIn aria-hidden="true" />
                 {loading ? 'Signing in' : 'Sign in'}

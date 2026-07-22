@@ -8,11 +8,13 @@ function TVCard({
   rowIndex,
   itemIndex,
   autofocus = false,
+  nextUpKey,
 }: {
   item: HomeItem
   rowIndex: number | string
   itemIndex: number
   autofocus?: boolean
+  nextUpKey?: string
 }) {
   const rating = formatRating(item.rating)
   const year = getYear(item.release_date)
@@ -24,6 +26,7 @@ function TVCard({
       data-tv-focusable="true"
       data-tv-autofocus={autofocus ? 'true' : undefined}
       data-tv-key={`card-${rowIndex}-${item.content_type}-${item.id}`}
+      data-tv-next-up={nextUpKey}
       aria-label={`${item.title}, ${item.content_type}`}
     >
       <div className="tv-card-artwork">

@@ -6,5 +6,8 @@ declare global {
       isAvailable: () => boolean
       play: (url: string, title: string) => void
     }
+    AndroidTVInput?: {
+      hideKeyboard: () => void
+    }
   }
 }

@@ -8,13 +8,20 @@ function TVContentRow({
   row,
   rowIndex,
   autofocusFirst = false,
+  featured = false,
+  heroAbove = false,
 }: {
   row: CarouselRowData
   rowIndex: number
   autofocusFirst?: boolean
+  featured?: boolean
+  heroAbove?: boolean
 }) {
   return (
-    <section className="tv-content-row" aria-labelledby={`tv-row-${rowIndex}`}>
+    <section
+      className={`tv-content-row${featured ? ' tv-content-row-featured' : ''}`}
+      aria-labelledby={`tv-row-${rowIndex}`}
+    >
       <div className="tv-row-heading">
         <h2 id={`tv-row-${rowIndex}`}>{row.title}</h2>
 
@@ -39,6 +46,7 @@ function TVContentRow({
             rowIndex={rowIndex}
             itemIndex={itemIndex}
             autofocus={autofocusFirst && itemIndex === 0}
+            nextUpKey={heroAbove && itemIndex === 0 ? 'hero-play' : undefined}
           />
         ))}
       </div>

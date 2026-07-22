@@ -106,6 +106,11 @@ function TVHomePage({ mode = 'home' }: { mode?: TVBrowseMode }) {
     return () => observer.disconnect()
   }, [hasMore, loadMore])
 
+  const firstCardKey =
+    rows[0]?.items[0]
+      ? `card-0-${rows[0].items[0].content_type}-${rows[0].items[0].id}`
+      : undefined
+
   return (
     <TVShell>
       {loading ? (
@@ -118,7 +123,13 @@ function TVHomePage({ mode = 'home' }: { mode?: TVBrowseMode }) {
         />
       ) : (
         <div className="tv-home-page">
-          {featuredItem && <TVHero item={featuredItem} />}
+          {featuredItem && (
+            <TVHero
+              key={`${featuredItem.content_type}-${featuredItem.id}`}
+              item={featuredItem}
+              nextDownKey={firstCardKey}
+            />
+          )}
 
           <div className={`tv-rows${featuredItem ? '' : ' tv-rows-without-hero'}`}>
             {pageTitle && <h1 className="tv-page-title">{pageTitle}</h1>}
@@ -129,6 +140,8 @@ function TVHomePage({ mode = 'home' }: { mode?: TVBrowseMode }) {
                 row={row}
                 rowIndex={rowIndex}
                 autofocusFirst={!featuredItem && rowIndex === 0}
+                featured={mode === 'home' && rowIndex === 0}
+                heroAbove={Boolean(featuredItem) && rowIndex === 0}
               />
             ))}
 

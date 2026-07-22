@@ -77,3 +77,17 @@ An older debug APK signed by another build key must be removed once:
 ```
 
 The workflow caches the v2 debug signing key, so subsequent v2 APKs can normally be installed with `-r`.
+
+## TV v3 remote login
+
+The login form now has deterministic Fire TV focus routes:
+
+```text
+Email → Password → Sign in
+```
+
+Use Select to open the keyboard. Up and Down move between fields. Back hides the keyboard while keeping the current field selected.
+
+## Hero background preview
+
+The home hero reads the same `preview_url` value used by the original FlixHDMax frontend. MP4, M4V, and WebM previews start muted and automatically fall back to the backdrop image if playback fails.

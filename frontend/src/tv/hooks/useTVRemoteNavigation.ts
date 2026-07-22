@@ -43,7 +43,33 @@ function allFocusableElements() {
   ).filter(isVisible)
 }
 
+function findByTVKey(key?: string | null) {
+  if (!key) return null
+
+  return (
+    Array.from(document.querySelectorAll<FocusableElement>('[data-tv-key]')).find(
+      (element) => element.dataset.tvKey === key && isVisible(element)
+    ) || null
+  )
+}
+
+function explicitTarget(current: HTMLElement, direction: Direction) {
+  const key =
+    direction === 'left'
+      ? current.dataset.tvNextLeft
+      : direction === 'right'
+        ? current.dataset.tvNextRight
+        : direction === 'up'
+          ? current.dataset.tvNextUp
+          : current.dataset.tvNextDown
+
+  return findByTVKey(key)
+}
+
 function getNextElement(current: HTMLElement, direction: Direction) {
+  const routedTarget = explicitTarget(current, direction)
+  if (routedTarget) return routedTarget
+
   const currentRect = current.getBoundingClientRect()
   const currentCentre = centre(currentRect)
 
@@ -84,7 +110,8 @@ function getNextElement(current: HTMLElement, direction: Direction) {
       const overlap = Math.max(0, overlapEnd - overlapStart)
       const overlapRatio = overlap / Math.max(1, Math.min(currentSpan, candidateSpan))
 
-      const sameLaneBonus = overlapRatio > 0.35 ? -Math.min(140, primaryDistance * 0.2) : 0
+      const sameLaneBonus =
+        overlapRatio > 0.35 ? -Math.min(140, primaryDistance * 0.2) : 0
       const crossLanePenalty = secondaryDistance * (horizontal ? 1.65 : 1.9)
       const navPenalty = candidate.closest('.tv-top-nav') && direction !== 'up' ? 240 : 0
 
@@ -107,7 +134,23 @@ function clearFocusClass() {
     .forEach((element) => element.classList.remove('is-tv-focused'))
 }
 
-function focusElement(element: HTMLElement | null) {
+function isTextControl(element: Element | null) {
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  )
+}
+
+function hideNativeKeyboard() {
+  try {
+    window.AndroidTVInput?.hideKeyboard?.()
+  } catch {
+    // The browser build does not expose the native bridge.
+  }
+}
+
+function focusElement(element: HTMLElement | null, openTextInput = false) {
   if (!element || !isVisible(element)) return false
 
   clearFocusClass()
@@ -118,6 +161,12 @@ function focusElement(element: HTMLElement | null) {
     block: 'nearest',
     inline: 'center',
   })
+
+  if (openTextInput && isTextControl(element)) {
+    window.setTimeout(() => element.click(), 0)
+  } else if (!isTextControl(element)) {
+    hideNativeKeyboard()
+  }
 
   return document.activeElement === element
 }
@@ -144,18 +193,10 @@ function isBackCode(keyCode: number) {
   )
 }
 
-function isTextControl(element: Element | null) {
-  return (
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLTextAreaElement ||
-    element instanceof HTMLSelectElement
-  )
-}
-
 function activateFocusedElement(element: HTMLElement | null) {
   if (!element || !element.matches(FOCUSABLE_SELECTOR)) return false
 
-  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+  if (isTextControl(element)) {
     element.focus()
     element.click()
     return true
@@ -187,11 +228,7 @@ export function useTVRemoteNavigation() {
 
     const restoreFocus = () => {
       const savedKey = sessionStorage.getItem(`tv-focus:${location.pathname}`)
-      const saved = savedKey
-        ? Array.from(document.querySelectorAll<HTMLElement>('[data-tv-key]')).find(
-            (element) => element.dataset.tvKey === savedKey
-          ) || null
-        : null
+      const saved = findByTVKey(savedKey)
 
       if (focusElement(saved)) return
 
@@ -206,9 +243,8 @@ export function useTVRemoteNavigation() {
       const textControl = isTextControl(active)
 
       if (isBackCode(keyCode)) {
-        if (textControl && active instanceof HTMLElement) {
-          active.blur()
-          window.setTimeout(restoreFocus, 0)
+        if (textControl) {
+          hideNativeKeyboard()
           return true
         }
 
@@ -228,7 +264,7 @@ export function useTVRemoteNavigation() {
       }
 
       const direction = directionFromCode(keyCode)
-      if (!direction || textControl) return false
+      if (!direction) return false
 
       const current =
         active && active.matches(FOCUSABLE_SELECTOR)
@@ -238,8 +274,23 @@ export function useTVRemoteNavigation() {
 
       if (!current) return false
 
-      const next = getNextElement(current, direction)
-      if (next) return focusElement(next)
+      const routedTarget = explicitTarget(current, direction)
+
+      if (textControl) {
+        if (routedTarget) {
+          return focusElement(routedTarget, isTextControl(routedTarget))
+        }
+
+        if (direction === 'up' || direction === 'down') {
+          const next = getNextElement(current, direction)
+          if (next) return focusElement(next, isTextControl(next))
+        }
+
+        return true
+      }
+
+      const next = routedTarget || getNextElement(current, direction)
+      if (next) return focusElement(next, isTextControl(next))
 
       return true
     }
