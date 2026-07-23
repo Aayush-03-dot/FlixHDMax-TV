@@ -35,9 +35,11 @@ function supportedPreviewUrl(value?: string | null) {
 function TVHero({
   item,
   nextDownKey,
+  topNavKey = 'top-home',
 }: {
   item: HomeItem
   nextDownKey?: string
+  topNavKey?: string
 }) {
   const heroRef = useRef<HTMLElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -45,7 +47,10 @@ function TVHero({
   const playUrl = `${detailUrl}?play=1`
   const rating = formatRating(item.rating)
   const year = getYear(item.release_date)
-  const previewUrl = useMemo(() => supportedPreviewUrl(item.preview_url), [item.preview_url])
+  const previewUrl = useMemo(
+    () => supportedPreviewUrl(item.preview_url),
+    [item.preview_url]
+  )
   const [previewVisible, setPreviewVisible] = useState(false)
   const [previewFailed, setPreviewFailed] = useState(false)
   const [muted, setMuted] = useState(true)
@@ -69,8 +74,12 @@ function TVHero({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.35 && !document.hidden) {
-          previewDelay = window.setTimeout(playPreview, 900)
+        if (
+          entry.isIntersecting &&
+          entry.intersectionRatio >= 0.35 &&
+          !document.hidden
+        ) {
+          previewDelay = window.setTimeout(playPreview, 1100)
         } else {
           window.clearTimeout(previewDelay)
           video.pause()
@@ -114,14 +123,18 @@ function TVHero({
   }
 
   return (
-    <section ref={heroRef} className="tv-hero" aria-label={`Featured: ${item.title}`}>
+    <section
+      ref={heroRef}
+      className="tv-hero"
+      aria-label={`Featured: ${item.title}`}
+    >
       <img
         className="tv-hero-backdrop"
         src={getItemArtwork(item)}
         alt=""
         fetchPriority="high"
         onError={(event) => {
-          event.currentTarget.src = '/admin-logo.png'
+          event.currentTarget.style.display = 'none'
         }}
       />
 
@@ -130,7 +143,7 @@ function TVHero({
           ref={videoRef}
           className={`tv-hero-preview${previewVisible ? ' is-visible' : ''}`}
           src={previewUrl}
-          preload="auto"
+          preload="metadata"
           playsInline
           muted={muted}
           loop
@@ -149,7 +162,7 @@ function TVHero({
       <div className="tv-hero-overlay" />
 
       <div className="tv-hero-content">
-        <p className="tv-kicker">Featured</p>
+        <div className="tv-hero-eyebrow">Featured on FlixHDMax</div>
         <h1>{item.title}</h1>
 
         <div className="tv-hero-meta">
@@ -168,13 +181,14 @@ function TVHero({
           {item.description || 'Open this title to see details and start watching.'}
         </p>
 
-        <div className="tv-hero-actions">
+        <div className="tv-hero-actions" data-tv-group="hero-actions">
           <Link
             to={playUrl}
             className="tv-primary-button tv-focusable"
             data-tv-focusable="true"
             data-tv-autofocus="true"
             data-tv-key="hero-play"
+            data-tv-next-up={topNavKey}
             data-tv-next-right="hero-info"
             data-tv-next-down={nextDownKey}
           >
@@ -187,30 +201,36 @@ function TVHero({
             className="tv-secondary-button tv-focusable"
             data-tv-focusable="true"
             data-tv-key="hero-info"
+            data-tv-next-up={topNavKey}
             data-tv-next-left="hero-play"
             data-tv-next-right={previewVisible ? 'hero-audio' : undefined}
             data-tv-next-down={nextDownKey}
           >
             <Info aria-hidden="true" />
-            Details
+            More info
           </Link>
+
+          {previewVisible && (
+            <button
+              type="button"
+              className="tv-hero-audio tv-focusable"
+              onClick={toggleMuted}
+              data-tv-focusable="true"
+              data-tv-key="hero-audio"
+              data-tv-next-up={topNavKey}
+              data-tv-next-left="hero-info"
+              data-tv-next-down={nextDownKey}
+              aria-label={muted ? 'Turn preview sound on' : 'Mute preview'}
+            >
+              {muted ? (
+                <VolumeX aria-hidden="true" />
+              ) : (
+                <Volume2 aria-hidden="true" />
+              )}
+            </button>
+          )}
         </div>
       </div>
-
-      {previewVisible && (
-        <button
-          type="button"
-          className="tv-hero-audio tv-focusable"
-          onClick={toggleMuted}
-          data-tv-focusable="true"
-          data-tv-key="hero-audio"
-          data-tv-next-left="hero-info"
-          data-tv-next-down={nextDownKey}
-          aria-label={muted ? 'Turn preview sound on' : 'Mute preview'}
-        >
-          {muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
-        </button>
-      )}
     </section>
   )
 }

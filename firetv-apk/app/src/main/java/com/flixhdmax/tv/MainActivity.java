@@ -1,16 +1,19 @@
 package com.flixhdmax.tv;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -19,13 +22,17 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+
+import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
     private FrameLayout rootView;
     private WebView webView;
     private View customView;
     private WebChromeClient.CustomViewCallback customViewCallback;
+    private AlertDialog inputDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +46,14 @@ public final class MainActivity extends Activity {
         enterImmersiveMode();
 
         rootView = new FrameLayout(this);
-        rootView.setBackgroundColor(Color.rgb(5, 5, 5));
+        rootView.setBackgroundColor(Color.rgb(3, 3, 3));
 
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.rgb(5, 5, 5));
+        webView.setBackgroundColor(Color.rgb(3, 3, 3));
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        if (BuildConfig.DEBUG) webView.clearCache(true);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -58,7 +66,7 @@ public final class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         settings.setUserAgentString(
-            settings.getUserAgentString() + " FlixHDMaxTV/3.0 FireTV"
+            settings.getUserAgentString() + " FlixHDMaxTV/4.0 FireTV"
         );
 
         CookieManager cookieManager = CookieManager.getInstance();
@@ -70,10 +78,7 @@ public final class MainActivity extends Activity {
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public void onShowCustomView(
-                View view,
-                CustomViewCallback callback
-            ) {
+            public void onShowCustomView(View view, CustomViewCallback callback) {
                 if (customView != null) {
                     callback.onCustomViewHidden();
                     return;
@@ -135,15 +140,17 @@ public final class MainActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (inputDialog != null && inputDialog.isShowing()) {
+            return super.dispatchKeyEvent(event);
+        }
+
         int keyCode = event.getKeyCode();
 
         if (!isTVRemoteKey(keyCode) || webView == null) {
             return super.dispatchKeyEvent(event);
         }
 
-        if (event.getAction() == KeyEvent.ACTION_UP) {
-            return true;
-        }
+        if (event.getAction() == KeyEvent.ACTION_UP) return true;
 
         String script =
             "Boolean(window.__flixTVHandleNativeKey && " +
@@ -171,6 +178,11 @@ public final class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (inputDialog != null && inputDialog.isShowing()) {
+            inputDialog.dismiss();
+            return;
+        }
+
         if (customView != null) {
             hideCustomView();
             return;
@@ -198,6 +210,11 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (inputDialog != null) {
+            inputDialog.dismiss();
+            inputDialog = null;
+        }
+
         hideCustomView();
 
         if (webView != null) {
@@ -250,6 +267,15 @@ public final class MainActivity extends Activity {
         );
     }
 
+    private void sendInputValue(String fieldKey, String value) {
+        if (webView == null) return;
+
+        String script =
+            "window.__flixTVSetInput && window.__flixTVSetInput(" +
+            JSONObject.quote(fieldKey) + "," + JSONObject.quote(value) + ")";
+        webView.evaluateJavascript(script, null);
+    }
+
     private final class TVInputBridge {
         @JavascriptInterface
         public void hideKeyboard() {
@@ -262,6 +288,120 @@ public final class MainActivity extends Activity {
                 View focusedView = getCurrentFocus();
                 View tokenView = focusedView == null ? webView : focusedView;
                 inputMethodManager.hideSoftInputFromWindow(tokenView.getWindowToken(), 0);
+            });
+        }
+
+        @JavascriptInterface
+        public void openKeyboard(
+            String fieldKey,
+            String currentValue,
+            String label,
+            String inputType
+        ) {
+            runOnUiThread(() -> {
+                if (inputDialog != null && inputDialog.isShowing()) {
+                    inputDialog.dismiss();
+                }
+
+                EditText input = new EditText(MainActivity.this);
+                input.setSingleLine(true);
+                input.setText(currentValue == null ? "" : currentValue);
+                input.setSelection(input.getText().length());
+                input.setTextSize(20f);
+                input.setPadding(28, 20, 28, 20);
+                input.setImeOptions(EditorInfo.IME_ACTION_DONE);
+
+                String normalizedType = inputType == null ? "text" : inputType.toLowerCase();
+                if ("password".equals(normalizedType)) {
+                    input.setInputType(
+                        InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    );
+                } else if ("email".equals(normalizedType)) {
+                    input.setInputType(
+                        InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                    );
+                } else if ("search".equals(normalizedType)) {
+                    input.setInputType(
+                        InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_NORMAL
+                    );
+                } else {
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                }
+
+                String dialogTitle =
+                    label == null || label.trim().isEmpty() ? "Enter text" : label;
+
+                AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(dialogTitle)
+                    .setView(input)
+                    .setPositiveButton("Done", null)
+                    .setNegativeButton("Cancel", null)
+                    .setNeutralButton("Clear", null)
+                    .create();
+
+                inputDialog = dialog;
+
+                dialog.setOnShowListener(ignored -> {
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+                        sendInputValue(fieldKey, input.getText().toString());
+                        dialog.dismiss();
+                        if (webView != null) webView.requestFocus();
+                    });
+
+                    dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view -> {
+                        input.setText("");
+                        input.requestFocus();
+                    });
+
+                    input.setOnEditorActionListener((view, actionId, event) -> {
+                        if (
+                            actionId == EditorInfo.IME_ACTION_DONE ||
+                            (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)
+                        ) {
+                            sendInputValue(fieldKey, input.getText().toString());
+                            dialog.dismiss();
+                            if (webView != null) webView.requestFocus();
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    input.requestFocus();
+                    Window window = dialog.getWindow();
+                    if (window != null) {
+                        window.setSoftInputMode(
+                            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
+                        );
+                    }
+
+                    input.postDelayed(() -> {
+                        InputMethodManager manager =
+                            (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (manager != null) {
+                            boolean shown = manager.showSoftInput(
+                                input,
+                                InputMethodManager.SHOW_IMPLICIT
+                            );
+                            if (!shown) {
+                                manager.toggleSoftInput(
+                                    InputMethodManager.SHOW_FORCED,
+                                    InputMethodManager.HIDE_IMPLICIT_ONLY
+                                );
+                            }
+                        }
+                    }, 220);
+                });
+
+                dialog.setOnDismissListener(ignored -> {
+                    inputDialog = null;
+                    enterImmersiveMode();
+                    if (webView != null) webView.requestFocus();
+                });
+
+                dialog.show();
             });
         }
     }

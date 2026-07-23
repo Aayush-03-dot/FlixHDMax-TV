@@ -1,5 +1,5 @@
 import Hls from 'hls.js'
-import { ArrowLeft, Play, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Maximize, Play, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { apiGet } from '../../services/api'
@@ -23,10 +23,16 @@ function hasNativeTVPlayer() {
   }
 }
 
+function requestFullscreen(element: HTMLElement | null) {
+  if (!element || document.fullscreenElement) return
+  void element.requestFullscreen?.().catch(() => undefined)
+}
+
 function TVHostedPlayerPage() {
   const { hostedVideoId } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const pageRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const nativeOpenedRef = useRef(false)
   const [playback, setPlayback] = useState<HostedPlaybackResponse | null>(null)
@@ -102,7 +108,7 @@ function TVHostedPlayerPage() {
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = playback.master_url
-      video.play().catch(() => undefined)
+      void video.play().then(() => requestFullscreen(pageRef.current)).catch(() => undefined)
     } else if (Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
@@ -113,12 +119,10 @@ function TVHostedPlayerPage() {
       hls.loadSource(playback.master_url)
       hls.attachMedia(video)
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => undefined)
+        void video.play().then(() => requestFullscreen(pageRef.current)).catch(() => undefined)
       })
       hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) {
-          setError('The television browser could not play this stream.')
-        }
+        if (data.fatal) setError('The television could not play this stream.')
       })
     } else {
       window.setTimeout(() => {
@@ -136,28 +140,44 @@ function TVHostedPlayerPage() {
 
   return (
     <TVStandalonePage>
-      <div className="tv-hosted-player-page">
-        <div className="tv-player-toolbar">
+      <div ref={pageRef} className="tv-player-page tv-player-fullscreen">
+        <div className="tv-player-overlay" data-tv-group="player-controls">
           <button
             type="button"
             className="tv-player-back tv-focusable"
             onClick={() => navigate(-1)}
             data-tv-focusable="true"
             data-tv-key="hosted-player-back"
+            data-tv-group="player-controls"
+            data-tv-next-right="hosted-player-fullscreen"
           >
             <ArrowLeft aria-hidden="true" />
             Back
           </button>
+
           <div className="tv-player-heading">
             <span>Now playing</span>
             <strong>{title}</strong>
           </div>
+
+          <button
+            type="button"
+            className="tv-player-icon tv-focusable"
+            onClick={() => requestFullscreen(pageRef.current)}
+            data-tv-focusable="true"
+            data-tv-key="hosted-player-fullscreen"
+            data-tv-group="player-controls"
+            data-tv-next-left="hosted-player-back"
+            aria-label="Full screen"
+          >
+            <Maximize aria-hidden="true" />
+          </button>
         </div>
 
         {loading ? (
           <TVLoading label="Preparing video" />
         ) : error ? (
-          <section className="tv-player-error">
+          <section className="tv-player-error" data-tv-group="player-error">
             <h1>Playback unavailable</h1>
             <p>{error}</p>
             <button
@@ -167,16 +187,17 @@ function TVHostedPlayerPage() {
               data-tv-focusable="true"
               data-tv-autofocus="true"
               data-tv-key="hosted-player-retry"
+              data-tv-group="player-error"
             >
               <RotateCcw aria-hidden="true" />
               Try again
             </button>
           </section>
         ) : nativePlayerAvailable ? (
-          <section className="tv-native-player-launcher">
+          <section className="tv-native-player-launcher" data-tv-group="player-launcher">
             <Play fill="currentColor" aria-hidden="true" />
             <h1>{title}</h1>
-            <p>The Fire TV native player is ready.</p>
+            <p>Playback opens in the Fire TV native full-screen player.</p>
             <button
               type="button"
               className="tv-primary-button tv-focusable"
@@ -184,6 +205,7 @@ function TVHostedPlayerPage() {
               data-tv-focusable="true"
               data-tv-autofocus="true"
               data-tv-key="hosted-player-open"
+              data-tv-group="player-launcher"
             >
               <Play fill="currentColor" aria-hidden="true" />
               Resume playback

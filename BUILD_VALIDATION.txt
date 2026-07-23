@@ -1,17 +1,18 @@
-FlixHDMax TV v3 validation
+FlixHDMax TV v4 validation
 
-PASSED
-- TypeScript project compilation: tsc -b
-- ESLint: frontend/src/tv and frontend/src/App.tsx
-- Python backend compilation
+Passed:
+- TypeScript project compilation (tsc -b)
+- ESLint validation for TV source, App routing, and Vite configuration
+- Python compilation for the hosted-video playback route
 - Android manifest XML parsing
-- GitHub Actions YAML parsing
-- JSON manifest/package parsing
-- Login focus-route consistency checks
-- Hero preview_url integration checks
-- AndroidX and Media3 SDK compatibility configuration checks
-- ZIP integrity check
+- GitHub Actions workflow YAML parsing
+- Package and TV manifest JSON parsing
+- CSS brace validation
+- Native keyboard bridge static validation
+- TV focus-lane static validation
+- AndroidX / Media3 / compile SDK compatibility configuration check
+- Clean-package scan for node_modules, build output, Gradle cache, APK files, and private .env files
 
-NOT EXECUTED IN THIS LINUX ENVIRONMENT
-- Vite production bundle: uploaded dependencies contain a Windows-only Rolldown native package. Run npm ci and npm run build on Windows.
-- Android APK compilation: build through the included GitHub Actions workflow.
+Not executed in this container:
+- Final Vite bundle, because the available dependency cache contained a Windows-specific Rolldown native package. Run npm ci and npm run build on Windows.
+- Android APK compilation, because the Android SDK is not installed here. Use the included GitHub Actions workflow.

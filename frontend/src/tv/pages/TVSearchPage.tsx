@@ -9,6 +9,8 @@ import TVErrorState from '../components/TVErrorState'
 import TVLoading from '../components/TVLoading'
 import TVShell from '../components/TVShell'
 
+const GRID_COLUMNS = 5
+
 function TVSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = useMemo(
@@ -47,14 +49,12 @@ function TVSearchPage() {
   }
 
   useEffect(() => {
-    // Keep the remote search field synchronized with browser history.
+    // Keep the TV field synchronized with browser history.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuery(queryFromUrl)
 
-    if (queryFromUrl) {
-      runSearch(queryFromUrl)
-    }
-    // Search URL is the source of truth. runSearch intentionally stays out.
+    if (queryFromUrl) runSearch(queryFromUrl)
+    // URL changes are the source of truth for restored searches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryFromUrl])
 
@@ -71,7 +71,11 @@ function TVSearchPage() {
           <h1>Search</h1>
         </header>
 
-        <form className="tv-search-form" onSubmit={handleSubmit}>
+        <form
+          className="tv-search-form"
+          onSubmit={handleSubmit}
+          data-tv-group="search-controls"
+        >
           <Search aria-hidden="true" />
           <input
             type="search"
@@ -79,9 +83,15 @@ function TVSearchPage() {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Movies, series, actors or genres"
             autoComplete="off"
+            aria-label="Search FlixHDMax"
             data-tv-focusable="true"
             data-tv-autofocus="true"
             data-tv-key="search-input"
+            data-tv-group="search-controls"
+            data-tv-input-label="Search FlixHDMax"
+            data-tv-input-type="search"
+            data-tv-next-right={query ? 'search-clear' : 'search-submit'}
+            data-tv-next-up="top-search"
           />
 
           {query && (
@@ -96,6 +106,9 @@ function TVSearchPage() {
               }}
               data-tv-focusable="true"
               data-tv-key="search-clear"
+              data-tv-group="search-controls"
+              data-tv-next-left="search-input"
+              data-tv-next-right="search-submit"
               aria-label="Clear search"
             >
               <X aria-hidden="true" />
@@ -107,13 +120,16 @@ function TVSearchPage() {
             className="tv-primary-button tv-focusable"
             data-tv-focusable="true"
             data-tv-key="search-submit"
+            data-tv-group="search-controls"
+            data-tv-next-left={query ? 'search-clear' : 'search-input'}
           >
             Search
           </button>
         </form>
 
         <p className="tv-search-hint">
-          Select the search field to open the television keyboard.
+          Select the field to open the Fire TV keyboard. Use Clear inside the
+          keyboard to erase the full query.
         </p>
 
         {loading ? (
@@ -137,6 +153,7 @@ function TVSearchPage() {
                 item={item}
                 rowIndex="search"
                 itemIndex={index}
+                group={`search-grid-${Math.floor(index / GRID_COLUMNS)}`}
               />
             ))}
           </div>

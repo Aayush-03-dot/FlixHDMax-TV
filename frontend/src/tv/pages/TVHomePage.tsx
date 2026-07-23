@@ -24,6 +24,7 @@ function TVHomePage({ mode = 'home' }: { mode?: TVBrowseMode }) {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const pageTitle = mode === 'movie' ? 'Movies' : mode === 'series' ? 'TV Shows' : ''
+  const topNavKey = mode === 'movie' ? 'top-movies' : mode === 'series' ? 'top-tv-shows' : 'top-home'
 
   const initialEndpoint = useMemo(() => {
     if (mode === 'movie') return '/api/browse/initial?type=movie&limit=5'
@@ -128,6 +129,7 @@ function TVHomePage({ mode = 'home' }: { mode?: TVBrowseMode }) {
               key={`${featuredItem.content_type}-${featuredItem.id}`}
               item={featuredItem}
               nextDownKey={firstCardKey}
+              topNavKey={topNavKey}
             />
           )}
 

@@ -4,10 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 import { tvPath } from '../utils'
 
 const mainNavItems = [
-  { label: 'Home', path: '/' },
-  { label: 'Movies', path: '/movies' },
-  { label: 'TV Shows', path: '/shows' },
-  { label: 'My List', path: '/my-list' },
+  { label: 'Home', path: '/', key: 'top-home' },
+  { label: 'Movies', path: '/movies', key: 'top-movies' },
+  { label: 'TV Shows', path: '/shows', key: 'top-tv-shows' },
+  { label: 'My List', path: '/my-list', key: 'top-my-list' },
 ]
 
 function TVTopNav() {
@@ -18,20 +18,17 @@ function TVTopNav() {
     'Profile'
 
   return (
-    <header className="tv-top-nav" aria-label="FlixHDMax TV navigation">
-      <NavLink
-        to={tvPath('/')}
-        end
-        className="tv-top-brand tv-focusable"
-        data-tv-focusable="true"
-        data-tv-key="top-brand"
-        aria-label="FlixHDMax home"
-      >
+    <header
+      className="tv-top-nav"
+      data-tv-group="top-nav"
+      aria-label="FlixHDMax TV navigation"
+    >
+      <div className="tv-top-brand" aria-label="FlixHDMax">
         <img src="/favicon1.png" alt="FlixHDMax" />
-      </NavLink>
+      </div>
 
       <nav className="tv-top-nav-links" aria-label="Primary">
-        {mainNavItems.map(({ label, path }) => (
+        {mainNavItems.map(({ label, path, key }, index) => (
           <NavLink
             key={path}
             to={tvPath(path)}
@@ -40,7 +37,13 @@ function TVTopNav() {
               `tv-top-link tv-focusable${isActive ? ' is-active' : ''}`
             }
             data-tv-focusable="true"
-            data-tv-key={`top-${label.toLowerCase().replaceAll(' ', '-')}`}
+            data-tv-key={key}
+            data-tv-next-left={index > 0 ? mainNavItems[index - 1].key : undefined}
+            data-tv-next-right={
+              index < mainNavItems.length - 1
+                ? mainNavItems[index + 1].key
+                : 'top-search'
+            }
           >
             {label}
           </NavLink>
@@ -55,6 +58,8 @@ function TVTopNav() {
           }
           data-tv-focusable="true"
           data-tv-key="top-search"
+          data-tv-next-left="top-my-list"
+          data-tv-next-right="top-profile"
           aria-label="Search"
         >
           <Search aria-hidden="true" />
@@ -67,6 +72,7 @@ function TVTopNav() {
           }
           data-tv-focusable="true"
           data-tv-key="top-profile"
+          data-tv-next-left="top-search"
           aria-label={profileName}
         >
           {user?.profile_image_url ? (

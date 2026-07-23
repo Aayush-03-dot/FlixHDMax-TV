@@ -21,7 +21,7 @@ function TVLoginPage() {
     setError('')
 
     try {
-      await loginUser(email, password)
+      await loginUser(email.trim(), password)
       await refreshAuth()
       navigate(tvPath('/'), { replace: true })
     } catch (loginError: unknown) {
@@ -47,18 +47,23 @@ function TVLoginPage() {
 
         <header className="tv-login-brand">
           <img src="/favicon1.png" alt="FlixHDMax" />
-          <small>TV</small>
+          <span>TV</span>
         </header>
 
         <main className="tv-login-main">
           <section className="tv-login-panel">
-            <p className="tv-kicker">FlixHDMax TV</p>
+            <p className="tv-kicker">Welcome back</p>
             <h1>Sign in</h1>
             <p className="tv-login-copy">
-              Use your FlixHDMax account.
+              Select a field to open the Fire TV keyboard. The keyboard includes
+              Clear, Cancel and Done controls.
             </p>
 
-            <form onSubmit={handleSubmit} className="tv-login-form">
+            <form
+              onSubmit={handleSubmit}
+              className="tv-login-form"
+              data-tv-group="login-fields"
+            >
               <label>
                 <span>Email address</span>
                 <input
@@ -69,9 +74,13 @@ function TVLoginPage() {
                   inputMode="email"
                   enterKeyHint="next"
                   required
+                  aria-label="Email address"
                   data-tv-focusable="true"
                   data-tv-autofocus="true"
                   data-tv-key="login-email"
+                  data-tv-group="login-fields"
+                  data-tv-input-label="Email address"
+                  data-tv-input-type="email"
                   data-tv-next-down="login-password"
                 />
               </label>
@@ -86,33 +95,39 @@ function TVLoginPage() {
                     autoComplete="current-password"
                     enterKeyHint="done"
                     required
+                    aria-label="Password"
                     data-tv-focusable="true"
                     data-tv-key="login-password"
+                    data-tv-group="login-fields"
+                    data-tv-input-label="Password"
+                    data-tv-input-type={showPassword ? 'text' : 'password'}
                     data-tv-next-up="login-email"
-                    data-tv-next-right="login-show-password"
+                    data-tv-next-right="login-password-toggle"
                     data-tv-next-down="login-submit"
                   />
+
                   <button
                     type="button"
-                    className="tv-icon-button tv-focusable"
+                    className="tv-password-toggle tv-focusable"
                     onClick={() => setShowPassword((current) => !current)}
                     data-tv-focusable="true"
-                    data-tv-key="login-show-password"
+                    data-tv-key="login-password-toggle"
+                    data-tv-group="login-fields"
                     data-tv-next-left="login-password"
                     data-tv-next-up="login-email"
                     data-tv-next-down="login-submit"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+                    {showPassword ? (
+                      <EyeOff aria-hidden="true" />
+                    ) : (
+                      <Eye aria-hidden="true" />
+                    )}
                   </button>
                 </div>
               </label>
 
-              {error && <div className="tv-login-error">{error}</div>}
-
-              <p className="tv-login-remote-hint">
-                Press Select to type. Use Up and Down to move between fields.
-              </p>
+              {error && <p className="tv-login-error">{error}</p>}
 
               <button
                 type="submit"
@@ -120,12 +135,19 @@ function TVLoginPage() {
                 disabled={loading}
                 data-tv-focusable="true"
                 data-tv-key="login-submit"
+                data-tv-group="login-fields"
                 data-tv-next-up="login-password"
               >
                 <LogIn aria-hidden="true" />
                 {loading ? 'Signing in' : 'Sign in'}
               </button>
             </form>
+
+            <div className="tv-login-remote-hint">
+              <span>Remote</span>
+              <strong>Up / Down</strong> moves between fields
+              <strong>Select</strong> opens the keyboard
+            </div>
           </section>
         </main>
       </div>

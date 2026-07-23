@@ -167,7 +167,7 @@ function TVMovieDetailPage() {
                   </p>
                 )}
 
-                <div className="tv-detail-actions">
+                <div className="tv-detail-actions" data-tv-group="movie-actions">
                   <button
                     type="button"
                     className="tv-primary-button tv-focusable"
@@ -175,6 +175,9 @@ function TVMovieDetailPage() {
                     data-tv-focusable="true"
                     data-tv-autofocus="true"
                     data-tv-key="movie-play"
+                    data-tv-group="movie-actions"
+                    data-tv-next-up="top-movies"
+                    data-tv-next-right="movie-my-list"
                   >
                     <Play fill="currentColor" aria-hidden="true" />
                     Play
@@ -187,6 +190,9 @@ function TVMovieDetailPage() {
                     disabled={listBusy}
                     data-tv-focusable="true"
                     data-tv-key="movie-my-list"
+                    data-tv-group="movie-actions"
+                    data-tv-next-up="top-movies"
+                    data-tv-next-left="movie-play"
                   >
                     {inMyList ? <Check aria-hidden="true" /> : <ListPlus aria-hidden="true" />}
                     {inMyList ? 'In My List' : 'My List'}

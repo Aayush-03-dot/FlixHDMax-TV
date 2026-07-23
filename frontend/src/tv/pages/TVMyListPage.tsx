@@ -8,6 +8,8 @@ import TVShell from '../components/TVShell'
 import type { TVMyListResponse } from '../types'
 import { normalizeMyListItem } from '../utils'
 
+const GRID_COLUMNS = 5
+
 function TVMyListPage() {
   const [items, setItems] = useState<HomeItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,6 +66,7 @@ function TVMyListPage() {
                 rowIndex="my-list"
                 itemIndex={index}
                 autofocus={index === 0}
+                group={`my-list-grid-${Math.floor(index / GRID_COLUMNS)}`}
               />
             ))}
           </div>

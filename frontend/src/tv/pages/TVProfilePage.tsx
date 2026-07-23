@@ -53,7 +53,7 @@ function TVProfilePage() {
           </article>
         </div>
 
-        <div className="tv-profile-actions">
+        <div className="tv-profile-actions" data-tv-group="profile-actions">
           <button
             type="button"
             className="tv-secondary-button tv-focusable"
@@ -61,6 +61,8 @@ function TVProfilePage() {
             data-tv-focusable="true"
             data-tv-autofocus="true"
             data-tv-key="profile-logout"
+            data-tv-group="profile-actions"
+            data-tv-next-up="top-profile"
           >
             <LogOut aria-hidden="true" />
             Sign out

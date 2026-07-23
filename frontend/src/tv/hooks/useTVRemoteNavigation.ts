@@ -6,14 +6,12 @@ const FOCUSABLE_SELECTOR =
   '[data-tv-focusable="true"]:not([disabled]):not([aria-disabled="true"]):not([aria-hidden="true"])'
 
 type Direction = 'left' | 'right' | 'up' | 'down'
-
-type FocusableElement = HTMLElement & {
-  disabled?: boolean
-}
+type FocusableElement = HTMLElement & { disabled?: boolean }
 
 declare global {
   interface Window {
     __flixTVHandleNativeKey?: (keyCode: number) => boolean
+    __flixTVSetInput?: (fieldKey: string, value: string) => void
   }
 }
 
@@ -28,13 +26,6 @@ function isVisible(element: HTMLElement) {
     rect.width > 0 &&
     rect.height > 0
   )
-}
-
-function centre(rect: DOMRect) {
-  return {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2,
-  }
 }
 
 function allFocusableElements() {
@@ -53,6 +44,23 @@ function findByTVKey(key?: string | null) {
   )
 }
 
+function groupOf(element: HTMLElement) {
+  return (
+    element.dataset.tvGroup ||
+    element.closest<HTMLElement>('[data-tv-group]')?.dataset.tvGroup ||
+    'default'
+  )
+}
+
+function centre(element: HTMLElement) {
+  const rect = element.getBoundingClientRect()
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+    rect,
+  }
+}
+
 function explicitTarget(current: HTMLElement, direction: Direction) {
   const key =
     direction === 'left'
@@ -66,66 +74,138 @@ function explicitTarget(current: HTMLElement, direction: Direction) {
   return findByTVKey(key)
 }
 
-function getNextElement(current: HTMLElement, direction: Direction) {
-  const routedTarget = explicitTarget(current, direction)
-  if (routedTarget) return routedTarget
+function groupOrder(elements: HTMLElement[]) {
+  const order: string[] = []
 
-  const currentRect = current.getBoundingClientRect()
-  const currentCentre = centre(currentRect)
+  elements.forEach((element) => {
+    const group = groupOf(element)
+    if (!order.includes(group)) order.push(group)
+  })
 
+  return order
+}
+
+function scoreDirectionalCandidate(
+  current: HTMLElement,
+  candidate: HTMLElement,
+  direction: Direction,
+  groupDistance = 0
+) {
+  const from = centre(current)
+  const to = centre(candidate)
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+
+  const valid =
+    direction === 'left'
+      ? dx < -6
+      : direction === 'right'
+        ? dx > 6
+        : direction === 'up'
+          ? dy < -6
+          : dy > 6
+
+  if (!valid) return Number.POSITIVE_INFINITY
+
+  const horizontal = direction === 'left' || direction === 'right'
+  const primary = horizontal ? Math.abs(dx) : Math.abs(dy)
+  const secondary = horizontal ? Math.abs(dy) : Math.abs(dx)
+
+  const overlapStart = horizontal
+    ? Math.max(from.rect.top, to.rect.top)
+    : Math.max(from.rect.left, to.rect.left)
+  const overlapEnd = horizontal
+    ? Math.min(from.rect.bottom, to.rect.bottom)
+    : Math.min(from.rect.right, to.rect.right)
+  const overlap = Math.max(0, overlapEnd - overlapStart)
+  const span = horizontal
+    ? Math.min(from.rect.height, to.rect.height)
+    : Math.min(from.rect.width, to.rect.width)
+  const overlapRatio = overlap / Math.max(1, span)
+
+  return (
+    primary +
+    secondary * (horizontal ? 2.4 : 1.55) +
+    groupDistance * 420 -
+    overlapRatio * 180
+  )
+}
+
+function sameGroupTarget(current: HTMLElement, direction: Direction) {
+  const currentGroup = groupOf(current)
   const candidates = allFocusableElements().filter(
-    (candidate) => candidate !== current
+    (candidate) => candidate !== current && groupOf(candidate) === currentGroup
   )
 
-  const scored = candidates
-    .map((candidate) => {
-      const rect = candidate.getBoundingClientRect()
-      const candidateCentre = centre(rect)
-      const dx = candidateCentre.x - currentCentre.x
-      const dy = candidateCentre.y - currentCentre.y
-
-      const inDirection =
-        direction === 'left'
-          ? dx < -8
-          : direction === 'right'
-            ? dx > 8
-            : direction === 'up'
-              ? dy < -8
-              : dy > 8
-
-      if (!inDirection) return null
-
-      const horizontal = direction === 'left' || direction === 'right'
-      const primaryDistance = horizontal ? Math.abs(dx) : Math.abs(dy)
-      const secondaryDistance = horizontal ? Math.abs(dy) : Math.abs(dx)
-
-      const currentSpan = horizontal ? currentRect.height : currentRect.width
-      const candidateSpan = horizontal ? rect.height : rect.width
-      const overlapStart = horizontal
-        ? Math.max(currentRect.top, rect.top)
-        : Math.max(currentRect.left, rect.left)
-      const overlapEnd = horizontal
-        ? Math.min(currentRect.bottom, rect.bottom)
-        : Math.min(currentRect.right, rect.right)
-      const overlap = Math.max(0, overlapEnd - overlapStart)
-      const overlapRatio = overlap / Math.max(1, Math.min(currentSpan, candidateSpan))
-
-      const sameLaneBonus =
-        overlapRatio > 0.35 ? -Math.min(140, primaryDistance * 0.2) : 0
-      const crossLanePenalty = secondaryDistance * (horizontal ? 1.65 : 1.9)
-      const navPenalty = candidate.closest('.tv-top-nav') && direction !== 'up' ? 240 : 0
-
-      return {
+  return (
+    candidates
+      .map((candidate) => ({
         candidate,
-        score: primaryDistance + crossLanePenalty + navPenalty + sameLaneBonus,
-      }
-    })
-    .filter((value): value is { candidate: FocusableElement; score: number } =>
-      Boolean(value)
-    )
-    .sort((a, b) => a.score - b.score)
+        score: scoreDirectionalCandidate(current, candidate, direction),
+      }))
+      .filter(({ score }) => Number.isFinite(score))
+      .sort((a, b) => a.score - b.score)[0]?.candidate || null
+  )
+}
 
-  return scored[0]?.candidate || null
+function adjacentGroupTarget(current: HTMLElement, direction: 'up' | 'down') {
+  const elements = allFocusableElements()
+  const currentGroup = groupOf(current)
+  const order = groupOrder(elements)
+  const currentIndex = order.indexOf(currentGroup)
+  const step = direction === 'up' ? -1 : 1
+
+  for (
+    let index = currentIndex + step;
+    index >= 0 && index < order.length;
+    index += step
+  ) {
+    const group = order[index]
+
+    if (group === 'top-nav' && direction === 'down') continue
+
+    const candidates = elements.filter((element) => groupOf(element) === group)
+    const ranked = candidates
+      .map((candidate) => ({
+        candidate,
+        score: scoreDirectionalCandidate(
+          current,
+          candidate,
+          direction,
+          Math.abs(index - currentIndex) - 1
+        ),
+      }))
+      .filter(({ score }) => Number.isFinite(score))
+      .sort((a, b) => a.score - b.score)
+
+    if (ranked[0]) return ranked[0].candidate
+  }
+
+  return null
+}
+
+function getNextElement(current: HTMLElement, direction: Direction) {
+  const routed = explicitTarget(current, direction)
+  if (routed) return routed
+
+  const currentGroup = groupOf(current)
+
+  if (currentGroup === 'top-nav' && direction === 'down') {
+    return (
+      findByTVKey(sessionStorage.getItem('tv-last-content-focus')) ||
+      document.querySelector<HTMLElement>('[data-tv-autofocus="true"]') ||
+      null
+    )
+  }
+
+  const sameGroup = sameGroupTarget(current, direction)
+  if (sameGroup) return sameGroup
+
+  if (direction === 'up' || direction === 'down') {
+    return adjacentGroupTarget(current, direction)
+  }
+
+  return null
 }
 
 function clearFocusClass() {
@@ -134,41 +214,77 @@ function clearFocusClass() {
     .forEach((element) => element.classList.remove('is-tv-focused'))
 }
 
-function isTextControl(element: Element | null) {
-  return (
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLTextAreaElement ||
-    element instanceof HTMLSelectElement
-  )
+function isTextControl(element: Element | null): element is HTMLInputElement | HTMLTextAreaElement {
+  return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
 }
 
 function hideNativeKeyboard() {
   try {
     window.AndroidTVInput?.hideKeyboard?.()
   } catch {
-    // The browser build does not expose the native bridge.
+    // Browser development does not expose the native bridge.
   }
 }
 
-function focusElement(element: HTMLElement | null, openTextInput = false) {
+function scrollFocusedIntoView(element: HTMLElement, direction?: Direction) {
+  const group = groupOf(element)
+
+  if (group === 'top-nav' || group === 'hero-actions') {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
+
+  element.scrollIntoView({
+    behavior: direction === 'up' || direction === 'down' ? 'smooth' : 'auto',
+    block: direction === 'up' || direction === 'down' ? 'center' : 'nearest',
+    inline: 'center',
+  })
+}
+
+function focusElement(element: HTMLElement | null, direction?: Direction) {
   if (!element || !isVisible(element)) return false
 
   clearFocusClass()
   element.classList.add('is-tv-focused')
   element.focus({ preventScroll: true })
-  element.scrollIntoView({
-    behavior: 'auto',
-    block: 'nearest',
-    inline: 'center',
-  })
+  scrollFocusedIntoView(element, direction)
 
-  if (openTextInput && isTextControl(element)) {
-    window.setTimeout(() => element.click(), 0)
-  } else if (!isTextControl(element)) {
-    hideNativeKeyboard()
-  }
+  if (!isTextControl(element)) hideNativeKeyboard()
 
   return document.activeElement === element
+}
+
+function openTextInput(element: HTMLInputElement | HTMLTextAreaElement) {
+  const fieldKey = element.dataset.tvKey || element.name || element.id || 'tv-input'
+  const label =
+    element.dataset.tvInputLabel ||
+    element.getAttribute('aria-label') ||
+    element.getAttribute('placeholder') ||
+    'Enter text'
+  const inputType =
+    element.dataset.tvInputType || element.getAttribute('type') || 'text'
+
+  try {
+    if (window.AndroidTVInput?.openKeyboard) {
+      window.AndroidTVInput.openKeyboard(fieldKey, element.value, label, inputType)
+      return true
+    }
+  } catch {
+    // Fall through to browser input behaviour.
+  }
+
+  element.focus()
+  element.click()
+  return true
+}
+
+function activateFocusedElement(element: HTMLElement | null) {
+  if (!element || !element.matches(FOCUSABLE_SELECTOR)) return false
+
+  if (isTextControl(element)) return openTextInput(element)
+
+  element.click()
+  return true
 }
 
 function directionFromCode(keyCode: number): Direction | null {
@@ -193,27 +309,36 @@ function isBackCode(keyCode: number) {
   )
 }
 
-function activateFocusedElement(element: HTMLElement | null) {
-  if (!element || !element.matches(FOCUSABLE_SELECTOR)) return false
-
-  if (isTextControl(element)) {
-    element.focus()
-    element.click()
-    return true
-  }
-
-  element.click()
-  return true
-}
-
 function keyCodeOf(event: KeyboardEvent) {
   if (event.key === 'ArrowLeft') return 37
   if (event.key === 'ArrowRight') return 39
   if (event.key === 'ArrowUp') return 38
   if (event.key === 'ArrowDown') return 40
   if (event.key === 'Enter' || event.key === 'Select') return 13
-  if (event.key === 'Escape' || event.key === 'BrowserBack' || event.key === 'GoBack') return 4
+  if (
+    event.key === 'Escape' ||
+    event.key === 'BrowserBack' ||
+    event.key === 'GoBack'
+  ) {
+    return 4
+  }
   return event.keyCode || event.which || 0
+}
+
+function setNativeInputValue(fieldKey: string, value: string) {
+  const element = findByTVKey(fieldKey)
+  if (!isTextControl(element)) return
+
+  const prototype =
+    element instanceof HTMLInputElement
+      ? HTMLInputElement.prototype
+      : HTMLTextAreaElement.prototype
+  const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value')
+
+  descriptor?.set?.call(element, value)
+  element.dispatchEvent(new Event('input', { bubbles: true }))
+  element.dispatchEvent(new Event('change', { bubbles: true }))
+  focusElement(element)
 }
 
 export function useTVRemoteNavigation() {
@@ -225,25 +350,28 @@ export function useTVRemoteNavigation() {
     document.body.classList.add('tv-body')
 
     let lastSelectAt = 0
+    let cancelled = false
 
     const restoreFocus = () => {
+      if (cancelled) return
+
       const savedKey = sessionStorage.getItem(`tv-focus:${location.pathname}`)
       const saved = findByTVKey(savedKey)
-
-      if (focusElement(saved)) return
-
-      focusElement(
-        document.querySelector<HTMLElement>('[data-tv-autofocus="true"]') ||
-          document.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+      const autofocus = document.querySelector<HTMLElement>(
+        '[data-tv-autofocus="true"]'
       )
+      const first = document.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+
+      if (focusElement(saved || autofocus || first)) return
+
+      window.setTimeout(restoreFocus, 80)
     }
 
     const handleCode = (keyCode: number) => {
       const active = document.activeElement as HTMLElement | null
-      const textControl = isTextControl(active)
 
       if (isBackCode(keyCode)) {
-        if (textControl) {
+        if (isTextControl(active)) {
           hideNativeKeyboard()
           return true
         }
@@ -258,7 +386,7 @@ export function useTVRemoteNavigation() {
 
       if (isSelectCode(keyCode)) {
         const now = Date.now()
-        if (now - lastSelectAt < 220) return true
+        if (now - lastSelectAt < 180) return true
         lastSelectAt = now
         return activateFocusedElement(active)
       }
@@ -274,43 +402,16 @@ export function useTVRemoteNavigation() {
 
       if (!current) return false
 
-      const routedTarget = explicitTarget(current, direction)
-
-      if (textControl) {
-        if (routedTarget) {
-          return focusElement(routedTarget, isTextControl(routedTarget))
-        }
-
-        if (direction === 'up' || direction === 'down') {
-          const next = getNextElement(current, direction)
-          if (next) return focusElement(next, isTextControl(next))
-        }
-
-        return true
-      }
-
-      const next = routedTarget || getNextElement(current, direction)
-      if (next) return focusElement(next, isTextControl(next))
+      const next = getNextElement(current, direction)
+      if (next) return focusElement(next, direction)
 
       return true
     }
 
     window.__flixTVHandleNativeKey = handleCode
+    window.__flixTVSetInput = setNativeInputValue
 
     const focusTimer = window.setTimeout(restoreFocus, 100)
-
-    const observer = new MutationObserver(() => {
-      const active = document.activeElement as HTMLElement | null
-
-      if (!active || active === document.body || !isVisible(active)) {
-        window.setTimeout(restoreFocus, 0)
-      }
-    })
-
-    observer.observe(document.getElementById('root') || document.body, {
-      childList: true,
-      subtree: true,
-    })
 
     const handleFocus = (event: FocusEvent) => {
       const element = event.target as HTMLElement | null
@@ -320,7 +421,12 @@ export function useTVRemoteNavigation() {
       element.classList.add('is-tv-focused')
 
       const key = element.dataset.tvKey
-      if (key) sessionStorage.setItem(`tv-focus:${location.pathname}`, key)
+      if (key) {
+        sessionStorage.setItem(`tv-focus:${location.pathname}`, key)
+        if (groupOf(element) !== 'top-nav') {
+          sessionStorage.setItem('tv-last-content-focus', key)
+        }
+      }
     }
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -344,15 +450,13 @@ export function useTVRemoteNavigation() {
     window.addEventListener('keydown', handleKeyDown, true)
 
     return () => {
+      cancelled = true
       window.clearTimeout(focusTimer)
-      observer.disconnect()
       document.removeEventListener('focusin', handleFocus, true)
       document.removeEventListener('pointerdown', handlePointerDown, true)
       window.removeEventListener('keydown', handleKeyDown, true)
       delete window.__flixTVHandleNativeKey
-      clearFocusClass()
-      document.documentElement.classList.remove('tv-document')
-      document.body.classList.remove('tv-body')
+      delete window.__flixTVSetInput
     }
   }, [location.pathname, navigate])
 }

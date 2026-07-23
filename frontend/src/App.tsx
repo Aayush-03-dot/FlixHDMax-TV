@@ -113,7 +113,6 @@ function AppRoutes() {
           </TVProtectedRoute>
         }
       />
-      <Route path="/tv/*" element={<Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

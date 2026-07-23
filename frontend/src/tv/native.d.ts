@@ -8,6 +8,12 @@ declare global {
     }
     AndroidTVInput?: {
       hideKeyboard: () => void
+      openKeyboard: (
+        fieldKey: string,
+        currentValue: string,
+        label: string,
+        inputType: string
+      ) => void
     }
   }
 }

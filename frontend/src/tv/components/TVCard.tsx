@@ -9,15 +9,18 @@ function TVCard({
   itemIndex,
   autofocus = false,
   nextUpKey,
+  group,
 }: {
   item: HomeItem
   rowIndex: number | string
   itemIndex: number
   autofocus?: boolean
   nextUpKey?: string
+  group?: string
 }) {
   const rating = formatRating(item.rating)
   const year = getYear(item.release_date)
+  const key = `card-${rowIndex}-${item.content_type}-${item.id}`
 
   return (
     <Link
@@ -25,17 +28,19 @@ function TVCard({
       className="tv-card tv-focusable"
       data-tv-focusable="true"
       data-tv-autofocus={autofocus ? 'true' : undefined}
-      data-tv-key={`card-${rowIndex}-${item.content_type}-${item.id}`}
+      data-tv-key={key}
+      data-tv-group={group}
       data-tv-next-up={nextUpKey}
       aria-label={`${item.title}, ${item.content_type}`}
     >
       <div className="tv-card-artwork">
+        <span className="tv-card-fallback" aria-hidden="true">{item.title}</span>
         <img
           src={getItemArtwork(item)}
           alt=""
-          loading={itemIndex < 6 ? 'eager' : 'lazy'}
+          loading={itemIndex < 8 ? 'eager' : 'lazy'}
           onError={(event) => {
-            event.currentTarget.src = '/admin-logo.png'
+            event.currentTarget.style.display = 'none'
           }}
         />
         <div className="tv-card-shade" />

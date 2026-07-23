@@ -192,7 +192,7 @@ function TVSeriesDetailPage() {
                   </p>
                 )}
 
-                <div className="tv-detail-actions">
+                <div className="tv-detail-actions" data-tv-group="series-actions">
                   <button
                     type="button"
                     className="tv-primary-button tv-focusable"
@@ -201,6 +201,9 @@ function TVSeriesDetailPage() {
                     data-tv-focusable="true"
                     data-tv-autofocus="true"
                     data-tv-key="series-play"
+                    data-tv-group="series-actions"
+                    data-tv-next-up="top-tv-shows"
+                    data-tv-next-right="series-my-list"
                   >
                     <Play fill="currentColor" aria-hidden="true" />
                     {selectedEpisode ? `Play episode ${selectedEpisode.number}` : 'No episodes'}
@@ -213,6 +216,9 @@ function TVSeriesDetailPage() {
                     disabled={listBusy}
                     data-tv-focusable="true"
                     data-tv-key="series-my-list"
+                    data-tv-group="series-actions"
+                    data-tv-next-up="top-tv-shows"
+                    data-tv-next-left="series-play"
                   >
                     {inMyList ? <Check aria-hidden="true" /> : <ListPlus aria-hidden="true" />}
                     {inMyList ? 'In My List' : 'My List'}
@@ -228,7 +234,7 @@ function TVSeriesDetailPage() {
               <h2>Episodes</h2>
             </div>
 
-            <div className="tv-season-tabs" role="tablist" aria-label="Seasons">
+            <div className="tv-season-tabs" data-tv-group="season-tabs" role="tablist" aria-label="Seasons">
               {item.seasons.map((season) => (
                 <button
                   key={season.id}
@@ -240,13 +246,14 @@ function TVSeriesDetailPage() {
                   }}
                   data-tv-focusable="true"
                   data-tv-key={`season-${season.id}`}
+                  data-tv-group="season-tabs"
                 >
                   {season.title}
                 </button>
               ))}
             </div>
 
-            <div className="tv-episode-list">
+            <div className="tv-episode-list" data-tv-group="episode-list">
               {(selectedSeason?.episodes || []).map((episode) => (
                 <button
                   key={episode.id}
@@ -255,6 +262,7 @@ function TVSeriesDetailPage() {
                   onClick={() => playEpisode(episode)}
                   data-tv-focusable="true"
                   data-tv-key={`episode-${episode.id}`}
+                  data-tv-group="episode-list"
                 >
                   <div className="tv-episode-number">{episode.number}</div>
                   <div className="tv-episode-copy">
